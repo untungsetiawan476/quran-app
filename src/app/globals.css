@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  /* Warna Tema Hijau Islami */
+  --color-islamic-50: #f0fdf4;
+  --color-islamic-100: #dcfce7;
+  --color-islamic-500: #22c55e;
+  --color-islamic-700: #15803d;
+  --color-islamic-900: #14532d;
+
+  /* Warna Tema Emas (Accent) */
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #f59e0b;
+
+  /* Font Arab Uthmani */
+  --font-arab: "Amiri", "Scheherazade New", serif;
+}
+
+/* Efek Blur untuk Mode Hafalan di halaman Detail Surat */
+.text-shadow-blur {
+  text-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* Base Styles */
+:root {
+  --background: #f0fdf4;
+  --foreground: #111827;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #111827;
+    --foreground: #f3f4f6;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}

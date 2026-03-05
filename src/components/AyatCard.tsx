@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import { callGeminiAPI } from '@/lib/gemini';
-import { BiPlayCircle, BiPauseCircle, BiBookmark, BiVolumeMute, BiHeadphone } from 'react-icons/bi';
+import { BiPlayCircle, BiPauseCircle, BiBookmark, BiHeadphone } from 'react-icons/bi';
 import { BsStars } from 'react-icons/bs';
 
 interface AyatProps {
@@ -165,3 +165,4 @@ export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, t
     </div>
   );
 }
+

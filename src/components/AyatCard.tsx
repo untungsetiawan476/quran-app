@@ -12,6 +12,10 @@ interface AyatProps {
   teksLatin: string;
   terjemahan: string;
   audioUrl: string;
+  // Tambahkan 3 baris ini:
+  fontSize: number;
+  fontFamily: string;
+  showPosterBtn: boolean;
 }
 
 export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, teksLatin, terjemahan, audioUrl }: AyatProps) {
@@ -328,3 +332,4 @@ export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, t
     </div>
   );
 }
+

@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { BiTrophy, BiArrowBack, BiShareAlt, BiRocket } from 'react-icons/bi';
+import { updateDashboardStats } from '@/lib/stats'; // Import Tracker Statistik
 
 // --- INTERFACES TIPE DATA ---
 interface Surah { nomor: number; namaLatin: string; jumlahAyat: number; }
@@ -9,7 +10,6 @@ interface Ayat { nomorAyat: number; teksArab: string; audio: { '05': string }; }
 interface Question { soal: Ayat; jawabanBenar: Ayat; pilihan: Ayat[]; }
 interface LeaderboardEntry { nama: string; skor: number; tanggal: string; }
 
-// Komponen Pembungkus untuk menangani searchParams di Next.js
 function KuisContent() {
   const searchParams = useSearchParams();
   const challengerName = searchParams.get('challenger');
@@ -91,7 +91,11 @@ function KuisContent() {
       if (currentIndex + 1 < questions.length) {
         setCurrentIndex(prev => prev + 1);
         setSelectedAnswer(null);
-      } else { setGameState('result'); }
+      } else {
+        // --- PERBAIKAN: Panggil fungsi update statistik di sini ---
+        updateDashboardStats('kuis', 1);
+        setGameState('result');
+      }
     }, 1500); 
   };
 
@@ -117,15 +121,12 @@ function KuisContent() {
     setGameState('leaderboard');
   };
 
-  // --- LOGIKA VIRAL SHARE ---
   const handleViralShare = () => {
     if (!playerName.trim()) return alert("Masukkan namamu dulu sebelum menantang teman!");
     
     const finalScore = Math.round(score);
     const surahName = selectedSurah?.namaLatin || "Al-Qur'an";
     const linkWebsite = "https://quran-app-two-eta.vercel.app/kuis";
-    
-    // Link ajaib yang membawa nama penantang dan skornya
     const linkTantangan = `${linkWebsite}?challenger=${encodeURIComponent(playerName)}&score=${finalScore}`;
     
     let pesan = "";
@@ -155,7 +156,6 @@ function KuisContent() {
         )}
       </div>
 
-      {/* ALERT TANTANGAN (Hanya muncul jika buka dari link teman) */}
       {gameState === 'setup' && challengerName && (
         <div className="bg-linear-to-r from-gold-50 to-white dark:from-gray-800 dark:to-gray-900 border-2 border-dashed border-gold-400 p-5 rounded-3xl mb-8 animate-bounce shadow-lg">
           <div className="flex items-center">
@@ -286,7 +286,7 @@ function KuisContent() {
 // Wrapper utama dengan Suspense untuk Next.js
 export default function KuisPageWrapper() {
   return (
-    <Suspense fallback={<div>Memuat Kuis...</div>}>
+    <Suspense fallback={<div className="text-center py-20 text-islamic-700 font-bold animate-pulse">Memuat Kuis...</div>}>
       <KuisContent />
     </Suspense>
   );

@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import AyatCard from '@/components/AyatCard';
 import SettingsModal from '@/components/SettingsModal'; 
 import { BiArrowBack, BiCog, BiBookReader, BiListUl, BiHide } from 'react-icons/bi';
+import { updateDashboardStats } from '@/lib/stats';
 
 interface Ayat {
   nomorAyat: number;
@@ -70,6 +71,10 @@ export default function SuratDetailPage() {
         const res = await fetch(`https://equran.id/api/v2/surat/${id}`);
         const data = await res.json();
         setSurat(data.data);
+  
+        // TAMBAHKAN BARIS INI: Update statistik baca sesuai jumlah ayat surat tersebut
+        updateDashboardStats('baca', data.data.jumlahAyat);
+  
       } catch {
         console.error("Gagal mengambil detail surat");
       } finally {

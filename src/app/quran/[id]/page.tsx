@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import AyatCard from '@/components/AyatCard';
 import SettingsModal from '@/components/SettingsModal'; 
-import { BiArrowBack, BiCog } from 'react-icons/bi';
+import { BiArrowBack, BiCog, BiBookReader, BiListUl, BiHide } from 'react-icons/bi';
 
 interface Ayat {
   nomorAyat: number;
@@ -31,12 +31,15 @@ export default function SuratDetailPage() {
   const [surat, setSurat] = useState<DetailSurat | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
+  // --- STATE SETTINGS & DISPLAY ---
   const [viewMode, setViewMode] = useState<'mushaf' | 'list'>('list');
+  const [modeHafalan, setModeHafalan] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [fontSize, setFontSize] = useState(30);
   const [fontFamily, setFontFamily] = useState('font-arab');
   const [showPosterBtn, setShowPosterBtn] = useState(true);
 
+  // --- LOAD SETTINGS DARI LOCALSTORAGE ---
   useEffect(() => {
     const saved = localStorage.getItem('quran_reader_settings');
     if (saved) {
@@ -48,8 +51,8 @@ export default function SuratDetailPage() {
     }
   }, []);
 
-  // Memperbaiki error 'any' dengan memberikan tipe Record
-  const handleUpdateSettings = (updates: Partial<{fontSize: number; fontFamily: string; showPosterBtn: boolean; viewMode: string}>) => {
+  // --- FUNGSI UPDATE & SIMPAN SETTINGS ---
+  const handleUpdateSettings = (updates: Partial<{fontSize: number; fontFamily: string; showPosterBtn: boolean; viewMode: 'mushaf' | 'list'}>) => {
     const newSettings = {
       fontSize,
       fontFamily,
@@ -60,6 +63,7 @@ export default function SuratDetailPage() {
     localStorage.setItem('quran_reader_settings', JSON.stringify(newSettings));
   };
 
+  // --- FETCH DATA SURAT ---
   useEffect(() => {
     const fetchDetail = async () => {
       try {
@@ -86,64 +90,117 @@ export default function SuratDetailPage() {
   if (!surat) return <div className="p-6 text-center">Surat tidak ditemukan.</div>;
 
   return (
-    <div className="min-h-screen pb-24 relative bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen pb-24 relative bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      
+      {/* 1. STICKY HEADER */}
       <div className="sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 p-4 flex items-center justify-between shadow-sm">
-        <button onClick={() => router.back()} className="text-gray-700 dark:text-white transition p-2">
+        <button onClick={() => router.back()} className="text-gray-700 dark:text-white p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition">
           <BiArrowBack size={24} />
         </button>
         <div className="text-center">
-          <h1 className="font-bold text-lg text-gray-900 dark:text-white">{surat.namaLatin}</h1>
-          <p className="text-[10px] text-gray-500 uppercase tracking-widest">{surat.arti} • {surat.jumlahAyat} Ayat</p>
+          <h1 className="font-bold text-lg text-gray-900 dark:text-white leading-tight">{surat.namaLatin}</h1>
+          <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold">{surat.arti} • {surat.jumlahAyat} Ayat</p>
         </div>
-        <button onClick={() => setShowSettings(true)} className="text-gray-700 dark:text-white p-2">
+        <button 
+          onClick={() => setShowSettings(true)} 
+          className="text-gray-700 dark:text-white p-2 hover:bg-islamic-50 dark:hover:bg-gray-800 rounded-full transition"
+        >
           <BiCog size={24} />
         </button>
       </div>
 
       <div className="p-4 max-w-3xl mx-auto">
-        {/* Update ke bg-linear-to-br sesuai saran Tailwind */}
-        <div className="bg-linear-to-br from-islamic-700 to-islamic-900 rounded-[2.5rem] p-8 text-center text-white shadow-xl mb-8 relative overflow-hidden border border-islamic-600">
-          <div className="absolute inset-0 opacity-10 flex items-center justify-center">
+        
+        {/* 2. BANNER INFORMASI SURAT */}
+        <div className="bg-linear-to-br from-islamic-700 to-islamic-900 rounded-[2.5rem] p-10 text-center text-white shadow-2xl mb-10 relative overflow-hidden border border-islamic-600">
+          <div className="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
             <span className="font-arab text-9xl">{surat.nama}</span>
           </div>
-          <h2 className="font-arab text-5xl mb-3 relative z-10">{surat.nama}</h2>
-          <p className="text-sm font-bold text-gold-400 relative z-10 uppercase tracking-[0.2em]">{surat.namaLatin}</p>
-          <div className="w-12 h-1 bg-gold-500/50 mx-auto my-5 rounded-full relative z-10"></div>
-          <p className="text-xs opacity-80 relative z-10 font-medium">
+          <h2 className="font-arab text-5xl mb-4 relative z-10">{surat.nama}</h2>
+          <p className="text-sm font-bold text-gold-400 relative z-10 uppercase tracking-[0.3em]">{surat.namaLatin}</p>
+          <div className="w-16 h-1 bg-gold-500/40 mx-auto my-6 rounded-full relative z-10"></div>
+          <p className="text-xs opacity-90 relative z-10 font-bold tracking-widest">
             {surat.tempatTurun.toUpperCase()} • {surat.jumlahAyat} AYAT
           </p>
         </div>
 
+        {/* 3. MENU TOGGLE CEPAT (Quick Access Toggles) */}
+        <div className="flex gap-2 mb-8 bg-white/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+           <button 
+             onClick={() => { setViewMode('mushaf'); handleUpdateSettings({viewMode: 'mushaf'}); }}
+             className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-xs font-bold transition-all ${viewMode === 'mushaf' ? 'bg-white dark:bg-gray-700 shadow-md text-islamic-600 dark:text-gold-400' : 'text-gray-400'}`}
+           >
+             <BiBookReader className="mr-2" size={18}/> Mushaf
+           </button>
+           <button 
+             onClick={() => { setViewMode('list'); handleUpdateSettings({viewMode: 'list'}); }}
+             className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-md text-islamic-600 dark:text-gold-400' : 'text-gray-400'}`}
+           >
+             <BiListUl className="mr-2" size={18}/> List
+           </button>
+           <button 
+             onClick={() => setModeHafalan(!modeHafalan)}
+             className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-xs font-bold transition-all ${modeHafalan ? 'bg-gold-500 text-white shadow-md' : 'text-gray-400'}`}
+           >
+             <BiHide className="mr-2" size={18}/> Hafalan
+           </button>
+        </div>
+
+        {/* 4. KALIMAT BISMILLAH */}
         {surat.nomor !== 1 && surat.nomor !== 9 && (
-          <div className="text-center font-arab text-4xl mb-10 text-gray-800 dark:text-gray-100">
+          <div className="text-center font-arab text-4xl mb-12 text-gray-800 dark:text-gray-100 transition-all opacity-90 hover:opacity-100">
             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
           </div>
         )}
 
-        <div className="space-y-6">
-          {surat.ayat.map((ayat) => (
-            <AyatCard 
-              key={ayat.nomorAyat}
-              nomorSurah={surat.nomor}
-              surahName={surat.namaLatin}
-              nomorAyat={ayat.nomorAyat}
-              teksArab={ayat.teksArab}
-              teksLatin={ayat.teksLatin}
-              terjemahan={ayat.teksIndonesia}
-              audioUrl={ayat.audio['05']}
-              fontSize={fontSize}
-              fontFamily={fontFamily}
-              showPosterBtn={showPosterBtn}
-            />
-          ))}
-        </div>
+        {/* 5. AREA BACAAN UTAMA */}
+        {viewMode === 'mushaf' ? (
+          // --- MODE MUSHAF (Full Arab) ---
+          <div className="bg-white dark:bg-gray-800 p-8 md:p-12 rounded-[3rem] shadow-sm border border-gray-100 dark:border-gray-700 transition-all duration-300" dir="rtl">
+            <p 
+              className={`text-justify leading-[2.8] text-gray-800 dark:text-gray-100 ${fontFamily}`}
+              style={{ fontSize: `${fontSize}px` }}
+            >
+              {surat.ayat.map((ayat) => (
+                <span key={ayat.nomorAyat} id={`ayat-${ayat.nomorAyat}`} className="inline scroll-mt-28">
+                  <span className={`transition-all duration-500 cursor-pointer ${modeHafalan ? 'text-transparent bg-gray-100 dark:bg-gray-700 rounded-md px-2 blur-sm hover:blur-none hover:text-gray-800 dark:hover:text-white hover:bg-transparent' : ''}`}>
+                    {ayat.teksArab}
+                  </span>
+                  {/* Ornamen Nomor Ayat */}
+                  <span className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-islamic-100 text-islamic-600 dark:text-gold-500 dark:border-gray-700 text-xs font-bold font-sans mx-4 align-middle bg-gray-50/50 dark:bg-gray-900/30 shadow-inner">
+                    {ayat.nomorAyat}
+                  </span>
+                </span>
+              ))}
+            </p>
+          </div>
+        ) : (
+          // --- MODE LIST (Detail Card) ---
+          <div className="space-y-8">
+            {surat.ayat.map((ayat) => (
+              <AyatCard 
+                key={ayat.nomorAyat}
+                nomorSurah={surat.nomor}
+                surahName={surat.namaLatin}
+                nomorAyat={ayat.nomorAyat}
+                teksArab={ayat.teksArab}
+                teksLatin={modeHafalan ? '' : ayat.teksLatin}
+                terjemahan={modeHafalan ? 'Mode Hafalan Aktif: Klik teks Arab untuk mengintip.' : ayat.teksIndonesia}
+                audioUrl={ayat.audio['05']}
+                fontSize={fontSize}
+                fontFamily={fontFamily}
+                showPosterBtn={showPosterBtn}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
+      {/* 6. MODAL PENGATURAN (Bottom Sheet) */}
       <SettingsModal 
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         fontSize={fontSize}
-        // Memberikan tipe data number, string, boolean pada parameter v, f, s
         setFontSize={(s: number) => { setFontSize(s); handleUpdateSettings({fontSize: s}); }}
         fontFamily={fontFamily}
         setFontFamily={(f: string) => { setFontFamily(f); handleUpdateSettings({fontFamily: f}); }}

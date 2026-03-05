@@ -7,6 +7,7 @@ import { LuBrainCircuit } from 'react-icons/lu';
 import { TbCompass } from 'react-icons/tb';
 import PrayerTimes from '@/components/PrayerTimes';
 import AyatHarian from '@/components/AyatHarian';
+import StatistikDashboard from '@/components/StatistikDashboard';
 
 interface LastRead {
   surahName: string;
@@ -81,6 +82,10 @@ export default function Home() {
                 </>
               )}
             </div>
+
+            <div className="px-5 mt-4">
+   <StatistikDashboard />
+</div>
             
             <Link 
               href={lastRead ? `/quran/${lastRead.nomorSurah}#ayat-${lastRead.ayat}` : "/quran"} 

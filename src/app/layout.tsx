@@ -1,6 +1,7 @@
 import './globals.css';
 import BottomNav from '@/components/BottomNav';
 import type { Metadata } from 'next';
+import { AudioProvider } from '@/context/AudioContext';
 
 export const metadata: Metadata = {
   title: "Qur'an Digital Learning App",
@@ -13,8 +14,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="id" className="scroll-smooth">
       <body className="bg-islamic-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 pb-24 min-h-screen transition-colors duration-300">
         <main className="max-w-md mx-auto bg-white dark:bg-gray-800 min-h-screen shadow-xl relative">
+        <AudioProvider>
           {children}
-          
+        {/* Kalau Mas pakai BottomNav, letakkan di bawah children tapi tetap di dalam AudioProvider */}
+        </AudioProvider>  
           {/* Footer Donasi & Copyright */}
           <div className="p-6 text-center border-t dark:border-gray-700 mt-8 mb-16">
             <p className="text-sm mb-4">Dukung pengembangan aplikasi ini:</p>

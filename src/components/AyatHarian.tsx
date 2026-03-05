@@ -193,14 +193,14 @@ export default function AyatHarian() {
         </div>
 
         {/* WATERMARK PROMOSI TIKTOK DI BAWAH */}
-        <div style={{ position: 'absolute', bottom: '100px', left: '0', width: '100%', textAlign: 'center', zIndex: 10 }}>
-          <p style={{ color: '#fbbf24', fontSize: '36px', fontWeight: 'bold', margin: '0 0 15px 0', letterSpacing: '2px' }}>
+        <div style={{ position: 'absolute', bottom: '100px', left: '0', right: '0', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10 }}>
+          <p style={{ color: '#fbbf24', fontSize: '36px', fontWeight: 'bold', margin: '0 0 15px 0', letterSpacing: '2px', textAlign: 'center' }}>
             BACA QUR&apos;AN DENGAN TAFSIR AI SEKARANG
           </p>
-          <div style={{ display: 'inline-block', backgroundColor: 'white', padding: '15px 40px', borderRadius: '50px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-            <p style={{ color: '#022c22', fontSize: '32px', margin: 0, fontWeight: 'bold' }}>
-              🌐 https://quran-app-two-eta.vercel.app/
-            </p>
+          <div style={{ backgroundColor: 'white', padding: '20px 50px', borderRadius: '50px', border: '4px solid #fbbf24' }}>
+            <span style={{ color: '#022c22', fontSize: '34px', fontWeight: 'bold' }}>
+              quran-app-two-eta.vercel.app
+            </span>
           </div>
         </div>
       </div>

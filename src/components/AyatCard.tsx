@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import { callGeminiAPI } from '@/lib/gemini';
-import { BiPlayCircle, BiPauseCircle, BiBookmark, BiHeadphone, BiImageAdd, BiBrain } from 'react-icons/bi';
+import { BiPlayCircle, BiPauseCircle, BiBookmark, BiHeadphone, BiImageAdd, BiBrain, BiFolderPlus, BiCheckCircle } from 'react-icons/bi';
 import { BsStars } from 'react-icons/bs';
 
 interface AyatProps {
@@ -17,23 +17,33 @@ interface AyatProps {
 export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, teksLatin, terjemahan, audioUrl }: AyatProps) {
   const [tafsir, setTafsir] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
   
-  // State Audio & Menu Belajar
+  // State Audio & Belajar
   const [isPlaying, setIsPlaying] = useState(false);
   const [showFocusMenu, setShowFocusMenu] = useState(false);
   const [loopLimit, setLoopLimit] = useState(1);
   const [ambientMode, setAmbientMode] = useState('none');
-  
-  // State Mode Uji Hafalan (Blanko)
   const [isQuizMode, setIsQuizMode] = useState(false);
   const [hiddenWords, setHiddenWords] = useState<number[]>([]);
+
+  // State Playlist (Koleksi)
+  const [showPlaylistMenu, setShowPlaylistMenu] = useState(false);
+  const [playlists, setPlaylists] = useState<string[]>([]);
+  const [newPlaylistName, setNewPlaylistName] = useState('');
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ambientRef = useRef<HTMLAudioElement | null>(null);
 
+  // Load daftar playlist dari memori HP saat komponen dimuat
   useEffect(() => {
+    const savedData = localStorage.getItem('quran_playlists');
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      setPlaylists(Object.keys(parsedData));
+    }
+    
     audioRef.current = new Audio(audioUrl);
     ambientRef.current = new Audio();
     ambientRef.current.loop = true; 
@@ -45,6 +55,7 @@ export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, t
     };
   }, [audioUrl]);
 
+  // Logika Audio
   const togglePlay = () => {
     if (isPlaying) {
       audioRef.current?.pause();
@@ -76,19 +87,15 @@ export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, t
     };
   };
 
-  // --- LOGIKA UJI HAFALAN ---
+  // Logika Kuis Blanko
   const toggleQuizMode = () => {
     if (!isQuizMode) {
-      // Pecah kalimat Arab per spasi
       const words = teksArab.split(' ');
-      // Sembunyikan sekitar 30% kata
       const numToHide = Math.max(1, Math.floor(words.length * 0.3)); 
       const indices = new Set<number>();
-      
       while (indices.size < numToHide) {
         indices.add(Math.floor(Math.random() * words.length));
       }
-      
       setHiddenWords(Array.from(indices));
       setIsQuizMode(true);
     } else {
@@ -98,10 +105,8 @@ export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, t
   };
 
   const revealWord = (index: number) => {
-    // Tampilkan kata yang diklik dengan menghapusnya dari daftar sembunyi
     setHiddenWords(prev => prev.filter(i => i !== index));
   };
-  // -------------------------
 
   const handleTafsirAI = async () => {
     setLoading(true);
@@ -115,10 +120,37 @@ export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, t
     setLoading(false);
   };
 
-  const handleBookmark = () => {
-    localStorage.setItem('quran_last_read', JSON.stringify({ surahName, nomorSurah, ayat: nomorAyat }));
-    setIsBookmarked(true);
-    setTimeout(() => setIsBookmarked(false), 2000);
+  // Logika Menyimpan ke Playlist
+  const handleSaveToPlaylist = (folderName: string) => {
+    const savedData = localStorage.getItem('quran_playlists');
+    // Perbaikan 1: Ganti 'let' menjadi 'const'
+    const allPlaylists = savedData ? JSON.parse(savedData) : {};
+    
+    if (!allPlaylists[folderName]) {
+      allPlaylists[folderName] = [];
+    }
+
+    // Perbaikan 2: Ganti 'any' dengan tipe data yang jelas
+    const exists = allPlaylists[folderName].find((item: { surah: number; ayat: number }) => item.surah === nomorSurah && item.ayat === nomorAyat);
+    
+    if (!exists) {
+      allPlaylists[folderName].push({
+        surah: nomorSurah,
+        surahName: surahName,
+        ayat: nomorAyat,
+        teksArab: teksArab,
+        terjemahan: terjemahan
+      });
+      localStorage.setItem('quran_playlists', JSON.stringify(allPlaylists));
+    }
+
+    setPlaylists(Object.keys(allPlaylists));
+    setNewPlaylistName('');
+    setSaveSuccess(true);
+    setTimeout(() => {
+      setSaveSuccess(false);
+      setShowPlaylistMenu(false);
+    }, 1500);
   };
 
   const downloadPoster = async () => {
@@ -137,6 +169,7 @@ export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, t
         link.click();
       }
     } catch (error) {
+      // Perbaikan 3: Tampilkan variabel 'error' agar tidak dianggap mubazir
       console.error("Gagal membuat poster", error);
     }
     setIsGeneratingPoster(false);
@@ -149,8 +182,8 @@ export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, t
           {nomorAyat}
         </div>
         
-        <div className="flex flex-col items-end space-y-2">
-          {/* BARIS TOMBOL UTAMA (Tetap bersih, hanya 5 ikon) */}
+        <div className="flex flex-col items-end space-y-2 relative">
+          {/* BARIS TOMBOL */}
           <div className="flex space-x-3 items-center">
             <button onClick={downloadPoster} disabled={isGeneratingPoster} className={`transition p-1.5 rounded-full text-gray-400 hover:text-islamic-500`} title="Jadikan Poster">
               {isGeneratingPoster ? <span className="flex h-5 w-5 relative"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-islamic-400 opacity-75"></span><span className="relative inline-flex rounded-full h-5 w-5 bg-islamic-500"></span></span> : <BiImageAdd size={24} />}
@@ -158,9 +191,12 @@ export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, t
             <button onClick={() => setShowFocusMenu(!showFocusMenu)} className={`transition p-1.5 rounded-full ${showFocusMenu ? 'bg-islamic-100 text-islamic-700 dark:bg-gray-700' : 'text-gray-400 hover:text-islamic-500'}`} title="Pusat Kontrol Belajar">
               <BiHeadphone size={24} />
             </button>
-            <button onClick={handleBookmark} className={`transition ${isBookmarked ? 'text-islamic-500' : 'text-gray-400 hover:text-islamic-500'}`}>
+            
+            {/* Tombol Buka Menu Playlist */}
+            <button onClick={() => setShowPlaylistMenu(!showPlaylistMenu)} className={`transition ${showPlaylistMenu ? 'text-islamic-500' : 'text-gray-400 hover:text-islamic-500'}`} title="Simpan ke Playlist">
               <BiBookmark size={26} />
             </button>
+
             <button onClick={togglePlay} className={`${isPlaying ? 'text-gold-500 animate-pulse' : 'text-islamic-500 hover:text-islamic-700'} transition`}>
               {isPlaying ? <BiPauseCircle size={30} /> : <BiPlayCircle size={30} />}
             </button>
@@ -170,14 +206,56 @@ export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, t
             </button>
           </div>
 
-          {/* DROPDOWN MENU BELAJAR (Disembunyikan saat tidak diklik) */}
-          {showFocusMenu && (
-            <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-100 dark:border-gray-600 flex flex-col gap-4 text-sm animate-fade-in-down w-full max-w-xs justify-end shadow-md">
-              <div className="flex justify-between items-center border-b pb-2 dark:border-gray-600">
-                 <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Mode Hafalan</span>
-              </div>
+          {/* MENU PLAYLIST (MUNCUL SAAT BOOKMARK DIKLIK) */}
+          {showPlaylistMenu && (
+            <div className="absolute top-10 right-16 z-20 bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-600 shadow-xl w-64 animate-fade-in-down">
+              <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Simpan ke Koleksi</h4>
               
-              {/* Pengaturan Audio */}
+              {saveSuccess ? (
+                <div className="flex items-center text-islamic-600 dark:text-islamic-400 text-sm font-medium py-2">
+                  <BiCheckCircle size={20} className="mr-2" /> Tersimpan!
+                </div>
+              ) : (
+                <>
+                  <div className="max-h-32 overflow-y-auto mb-3 space-y-1">
+                    {playlists.length === 0 ? (
+                      <p className="text-xs text-gray-400 italic">Belum ada folder.</p>
+                    ) : (
+                      playlists.map((folder, idx) => (
+                        <button key={idx} onClick={() => handleSaveToPlaylist(folder)} className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-islamic-50 dark:hover:bg-gray-700 rounded-lg transition">
+                          📁 {folder}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                  
+                  <div className="border-t dark:border-gray-700 pt-3">
+                    <p className="text-[10px] text-gray-500 mb-1">Buat Folder Baru:</p>
+                    <div className="flex space-x-2">
+                      <input 
+                        type="text" 
+                        value={newPlaylistName}
+                        onChange={(e) => setNewPlaylistName(e.target.value)}
+                        placeholder="Misal: Hafalan Lomba" 
+                        className="w-full text-xs px-2 py-1.5 border dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 dark:text-white outline-none focus:border-islamic-500"
+                      />
+                      <button 
+                        onClick={() => newPlaylistName.trim() && handleSaveToPlaylist(newPlaylistName.trim())}
+                        disabled={!newPlaylistName.trim()}
+                        className="bg-islamic-600 text-white p-1.5 rounded-lg disabled:opacity-50 hover:bg-islamic-700 transition"
+                      >
+                        <BiFolderPlus size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* DROPDOWN MENU BELAJAR */}
+          {showFocusMenu && (
+            <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-100 dark:border-gray-600 flex flex-col gap-4 text-sm animate-fade-in-down w-full max-w-xs justify-end shadow-md mt-2">
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col">
                   <span className="text-[10px] text-gray-500 dark:text-gray-400 mb-1 font-medium">Ulangi Audio:</span>
@@ -198,41 +276,21 @@ export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, t
                   </select>
                 </div>
               </div>
-
-              {/* Tombol Uji Hafalan (Blanko) */}
-              <button 
-                onClick={toggleQuizMode}
-                className={`flex items-center justify-center py-2 rounded-lg font-medium transition ${isQuizMode ? 'bg-islamic-500 text-white' : 'bg-islamic-100 text-islamic-700 dark:bg-gray-600 dark:text-white hover:bg-islamic-200'}`}
-              >
-                <BiBrain className="mr-2" size={18} />
-                {isQuizMode ? 'Matikan Uji Hafalan' : 'Mulai Uji Hafalan (Blanko)'}
+              <button onClick={toggleQuizMode} className={`flex items-center justify-center py-2 rounded-lg font-medium transition ${isQuizMode ? 'bg-islamic-500 text-white' : 'bg-islamic-100 text-islamic-700 dark:bg-gray-600 dark:text-white hover:bg-islamic-200'}`}>
+                <BiBrain className="mr-2" size={18} /> {isQuizMode ? 'Matikan Uji Hafalan' : 'Mulai Uji Hafalan (Blanko)'}
               </button>
             </div>
           )}
         </div>
       </div>
       
-      {/* TAMPILAN TEKS ARAB (Bisa berubah jadi Blanko Mode) */}
+      {/* TAMPILAN TEKS ARAB */}
       <div className="font-arab text-3xl text-right leading-loose mb-4 text-gray-800 dark:text-gray-100" dir="rtl">
-        {!isQuizMode ? (
-          teksArab
-        ) : (
-          teksArab.split(' ').map((word, idx) => (
-            <span key={idx} className="inline-block mx-1">
-              {hiddenWords.includes(idx) ? (
-                <span 
-                  onClick={() => revealWord(idx)}
-                  className="cursor-pointer inline-block bg-gray-200 dark:bg-gray-600 text-transparent hover:bg-islamic-200 dark:hover:bg-islamic-900 rounded-md px-4 select-none transition-colors border border-dashed border-gray-400"
-                  title="Klik untuk melihat kata"
-                >
-                  {word}
-                </span>
-              ) : (
-                <span>{word}</span>
-              )}
-            </span>
-          ))
-        )}
+        {!isQuizMode ? teksArab : teksArab.split(' ').map((word, idx) => (
+          <span key={idx} className="inline-block mx-1">
+            {hiddenWords.includes(idx) ? <span onClick={() => revealWord(idx)} className="cursor-pointer inline-block bg-gray-200 dark:bg-gray-600 text-transparent hover:bg-islamic-200 dark:hover:bg-islamic-900 rounded-md px-4 select-none transition-colors border border-dashed border-gray-400" title="Klik untuk melihat kata">{word}</span> : <span>{word}</span>}
+          </span>
+        ))}
       </div>
 
       <p className="text-sm text-islamic-700 dark:text-islamic-400 italic mb-2">{teksLatin}</p>
@@ -241,17 +299,14 @@ export default function AyatCard({ nomorSurah, surahName, nomorAyat, teksArab, t
       {/* Tafsir AI Box */}
       {tafsir && (
         <div className="mt-4 p-4 bg-linear-to-br from-islamic-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-lg border border-islamic-100 dark:border-gray-600">
-          <h4 className="flex items-center text-sm font-bold text-islamic-700 dark:text-gold-400 mb-2">
-            <BsStars className="mr-2" /> Hikmah & Tafsir AI
-          </h4>
+          <h4 className="flex items-center text-sm font-bold text-islamic-700 dark:text-gold-400 mb-2"><BsStars className="mr-2" /> Hikmah & Tafsir AI</h4>
           <div className="text-sm text-gray-700 dark:text-gray-300 space-y-2 whitespace-pre-wrap">{tafsir}</div>
         </div>
       )}
 
-      {/* KANVAS POSTER RAHASIA (TIDAK TERLIHAT) */}
+      {/* KANVAS POSTER RAHASIA */}
       <div id={`poster-${nomorAyat}`} style={{ display: 'none', width: '1080px', padding: '80px', backgroundColor: '#0f172a', color: 'white', fontFamily: 'sans-serif' }}>
-         {/* ... (Kode poster tetap aman menggunakan teksArab asli, jadi tidak ikut berlubang) ... */}
-         <div style={{ border: '2px solid #fbbf24', borderRadius: '30px', padding: '60px', position: 'relative' }}>
+        <div style={{ border: '2px solid #fbbf24', borderRadius: '30px', padding: '60px', position: 'relative' }}>
           <div style={{ position: 'absolute', top: '-25px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#0f172a', padding: '0 20px' }}>
             <BsStars size={50} color="#fbbf24" />
           </div>

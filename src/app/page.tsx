@@ -36,10 +36,10 @@ export default function Home() {
 
   // PERBAIKAN: Menggunakan bg-gradient-to-br agar warna kotak ikon muncul
   const quickAccess = [
-    { title: "Baca Al-Qur'an", desc: "Mushaf & Tafsir", icon: <BiBookOpen size={24} />, path: '/quran', bg: 'bg-gradient-to-br from-islamic-400 to-islamic-600', shadow: 'shadow-islamic-500/30' },
-    { title: "Kuis Hafalan", desc: "Uji daya ingat", icon: <LuBrainCircuit size={24} />, path: '/kuis', bg: 'bg-gradient-to-br from-gold-400 to-gold-600', shadow: 'shadow-gold-500/30' },
-    { title: "Pusat Doa", desc: "Kumpulan wirid", icon: <BsStars size={24} />, path: '/doa', bg: 'bg-gradient-to-br from-purple-400 to-purple-600', shadow: 'shadow-purple-500/30' },
-    { title: "Tools Islami", desc: "Tasbih & lainnya", icon: <TbCompass size={24} />, path: '/tools', bg: 'bg-gradient-to-br from-blue-400 to-blue-600', shadow: 'shadow-blue-500/30' },
+    { title: "Baca Al-Qur'an", desc: "Mushaf & Tafsir", icon: <BiBookOpen size={24} />, path: '/quran', bg: 'bg-islamic-500', shadow: 'shadow-islamic-500/30' },
+    { title: "Kuis Hafalan", desc: "Uji daya ingat", icon: <LuBrainCircuit size={24} />, path: '/kuis', bg: 'bg-gold-500', shadow: 'shadow-gold-500/30' },
+    { title: "Pusat Doa", desc: "Kumpulan wirid", icon: <BsStars size={24} />, path: '/doa', bg: 'bg-purple-500', shadow: 'shadow-purple-500/30' },
+    { title: "Tools Islami", desc: "Tasbih & lainnya", icon: <TbCompass size={24} />, path: '/tools', bg: 'bg-blue-500', shadow: 'shadow-blue-500/30' },
   ];
 
   return (

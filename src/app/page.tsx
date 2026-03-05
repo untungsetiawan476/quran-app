@@ -35,7 +35,6 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
-  // PERBAIKAN: Menggunakan bg-gradient-to-br agar warna kotak ikon muncul
   const quickAccess = [
     { title: "Baca Al-Qur'an", desc: "Mushaf & Tafsir", icon: <BiBookOpen size={24} />, path: '/quran', bg: 'bg-islamic-500', shadow: 'shadow-islamic-500/30' },
     { title: "Kuis Hafalan", desc: "Uji daya ingat", icon: <LuBrainCircuit size={24} />, path: '/kuis', bg: 'bg-gold-500', shadow: 'shadow-gold-500/30' },
@@ -47,7 +46,6 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24">
       {/* 1. HERO SECTION */}
       <div className="relative">
-        {/* Background Hijau (Overflow Hidden ditaruh di sini saja agar tidak memotong kartu di bawahnya) */}
         <div className="bg-islamic-900 rounded-b-[2.5rem] pt-12 pb-24 px-6 relative overflow-hidden shadow-xl shadow-islamic-900/20">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-gold-500/10 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4"></div>
@@ -63,7 +61,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Kartu Terakhir Dibaca (Ditarik ke atas menggunakan margin negatif -mt-16) */}
+        {/* 2. KARTU TERAKHIR DIBACA (Melayang) */}
         <div className="px-5 relative -mt-16 z-20">
           <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 shadow-xl flex items-center justify-between group">
             <div>
@@ -82,10 +80,6 @@ export default function Home() {
                 </>
               )}
             </div>
-
-            <div className="px-5 mt-4">
-   <StatistikDashboard />
-</div>
             
             <Link 
               href={lastRead ? `/quran/${lastRead.nomorSurah}#ayat-${lastRead.ayat}` : "/quran"} 
@@ -97,8 +91,12 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="px-5 mt-8 space-y-6">
-        {/* 2. MENU CEPAT */}
+      <div className="px-5 mt-6 space-y-6">
+        
+        {/* 3. DASHBOARD STATISTIK (Posisi yang Benar) */}
+        <StatistikDashboard />
+
+        {/* 4. MENU CEPAT EKSPLORASI */}
         <div>
           <div className="flex items-center justify-between mb-4 px-1">
             <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center">
@@ -120,12 +118,12 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 3. JADWAL SHOLAT */}
+        {/* 5. JADWAL SHOLAT */}
         <div className="relative">
           <PrayerTimes />
         </div>
 
-        {/* 4. AYAT HARIAN */}
+        {/* 6. AYAT HARIAN */}
         <div className="relative pb-6">
           <AyatHarian />
         </div>

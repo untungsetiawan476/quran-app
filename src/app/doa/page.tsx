@@ -214,17 +214,18 @@ export default function DoaPage() {
             </div>
           </div>
 
-          {/* WATERMARK PROMOSI TIKTOK DI BAWAH */}
-          <div style={{ position: 'absolute', bottom: '100px', left: '0', width: '100%', textAlign: 'center', zIndex: 10 }}>
-            <p style={{ color: '#fbbf24', fontSize: '36px', fontWeight: 'bold', margin: '0 0 15px 0', letterSpacing: '2px' }}>
-              TEMUKAN DOA UNTUK MASALAHMU
-            </p>
-            <div style={{ display: 'inline-block', backgroundColor: 'white', padding: '15px 40px', borderRadius: '50px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-              <p style={{ color: '#2e1065', fontSize: '32px', margin: 0, fontWeight: 'bold' }}>
-                🌐 https://quran-app-two-eta.vercel.app/
-              </p>
-            </div>
+          {/* WATERMARK PROMOSI TIKTOK DI BAWAH (Fixed) */}
+        <div style={{ position: 'absolute', bottom: '100px', left: '0', right: '0', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10 }}>
+          <p style={{ color: '#fbbf24', fontSize: '36px', fontWeight: 'bold', margin: '0 0 15px 0', letterSpacing: '2px', textAlign: 'center' }}>
+            TEMUKAN DOA UNTUK MASALAHMU
+          </p>
+          {/* Kotak Putih dengan Border Emas Premium */}
+          <div style={{ backgroundColor: 'white', padding: '20px 50px', borderRadius: '50px', border: '4px solid #fbbf24', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+            <span style={{ color: '#2e1065', fontSize: '34px', fontWeight: 'bold' }}>
+              quran-app-two-eta.vercel.app
+            </span>
           </div>
+        </div>
         </div>
       )}
     </div>

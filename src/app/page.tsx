@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BiBookOpen, BiTrophy, BiWrench, BiRightArrowAlt } from 'react-icons/bi';
 import { BsStars } from 'react-icons/bs';
+import PrayerTimes from '@/components/PrayerTimes';
 
 interface LastRead {
   surahName: string;
@@ -49,6 +50,8 @@ export default function Home() {
         {/* Tanda petik diubah menjadi &apos; */}
         <h1 className="text-2xl font-bold text-islamic-900 dark:text-white">Assalamu&apos;alaikum</h1>
       </div>
+
+      <PrayerTimes />
 
       {/* Card Terakhir Dibaca */}
       <div className="bg-linear-to-r from-islamic-700 to-islamic-900 rounded-3xl p-6 shadow-lg shadow-islamic-500/30 text-white mb-8 relative overflow-hidden">

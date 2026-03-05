@@ -1,11 +1,15 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import AyatCard from '@/components/AyatCard';
 import SettingsModal from '@/components/SettingsModal'; 
-import { BiArrowBack, BiCog, BiBookReader, BiListUl, BiHide } from 'react-icons/bi';
-import { updateDashboardStats } from '@/lib/stats';
+import { updateDashboardStats } from '@/lib/stats'; // <-- Tracker Statistik
+import { 
+  BiArrowBack, BiCog, BiBookReader, BiListUl, BiHide, 
+  BiPlayCircle, BiPauseCircle, BiHeadphone, BiX 
+} from 'react-icons/bi';
 
+// --- INTERFACES TIPE DATA ---
 interface Ayat {
   nomorAyat: number;
   teksArab: string;
@@ -22,6 +26,7 @@ interface DetailSurat {
   tempatTurun: string;
   arti: string;
   ayat: Ayat[];
+  audioFull: { [key: string]: string }; // <-- Tambahan API Audio Full
 }
 
 export default function SuratDetailPage() {
@@ -32,7 +37,7 @@ export default function SuratDetailPage() {
   const [surat, setSurat] = useState<DetailSurat | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // --- STATE SETTINGS & DISPLAY ---
+  // --- STATE PENGATURAN BACAAN ---
   const [viewMode, setViewMode] = useState<'mushaf' | 'list'>('list');
   const [modeHafalan, setModeHafalan] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -40,7 +45,12 @@ export default function SuratDetailPage() {
   const [fontFamily, setFontFamily] = useState('font-arab');
   const [showPosterBtn, setShowPosterBtn] = useState(true);
 
-  // --- LOAD SETTINGS DARI LOCALSTORAGE ---
+  // --- STATE MINI PLAYER ---
+  const [showMiniPlayer, setShowMiniPlayer] = useState(false);
+  const [isPlayingFull, setIsPlayingFull] = useState(false);
+  const fullAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Load Settings dari LocalStorage
   useEffect(() => {
     const saved = localStorage.getItem('quran_reader_settings');
     if (saved) {
@@ -50,31 +60,33 @@ export default function SuratDetailPage() {
       setShowPosterBtn(parsed.showPosterBtn ?? true);
       if(parsed.viewMode) setViewMode(parsed.viewMode);
     }
+    
+    // Cleanup audio saat keluar dari halaman
+    return () => {
+      if (fullAudioRef.current) {
+        fullAudioRef.current.pause();
+        fullAudioRef.current = null;
+      }
+    };
   }, []);
 
-  // --- FUNGSI UPDATE & SIMPAN SETTINGS ---
   const handleUpdateSettings = (updates: Partial<{fontSize: number; fontFamily: string; showPosterBtn: boolean; viewMode: 'mushaf' | 'list'}>) => {
-    const newSettings = {
-      fontSize,
-      fontFamily,
-      showPosterBtn,
-      viewMode,
-      ...updates
-    };
+    const newSettings = { fontSize, fontFamily, showPosterBtn, viewMode, ...updates };
     localStorage.setItem('quran_reader_settings', JSON.stringify(newSettings));
   };
 
-  // --- FETCH DATA SURAT ---
+  // Fetch Data Surat & Update Statistik
   useEffect(() => {
     const fetchDetail = async () => {
       try {
         const res = await fetch(`https://equran.id/api/v2/surat/${id}`);
         const data = await res.json();
         setSurat(data.data);
-  
-        // TAMBAHKAN BARIS INI: Update statistik baca sesuai jumlah ayat surat tersebut
+        
+        // --- POMPA STATISTIK BACAAN ---
+        // Menambah jumlah ayat yang dibaca ke dashboard beranda
         updateDashboardStats('baca', data.data.jumlahAyat);
-  
+        
       } catch {
         console.error("Gagal mengambil detail surat");
       } finally {
@@ -83,6 +95,38 @@ export default function SuratDetailPage() {
     };
     if (id) fetchDetail();
   }, [id]);
+
+  // --- LOGIKA MINI PLAYER ---
+  const toggleFullAudio = () => {
+    if (!surat) return;
+
+    // Jika audio belum pernah dibuat, buat instance baru
+    if (!fullAudioRef.current) {
+      // Kita pakai Qari 05 (Misyari Rasyid Al-Afasi) sebagai default
+      fullAudioRef.current = new Audio(surat.audioFull['05']);
+      fullAudioRef.current.onended = () => {
+        setIsPlayingFull(false);
+        setShowMiniPlayer(false);
+      };
+    }
+
+    if (isPlayingFull) {
+      fullAudioRef.current.pause();
+      setIsPlayingFull(false);
+    } else {
+      fullAudioRef.current.play();
+      setIsPlayingFull(true);
+      setShowMiniPlayer(true);
+    }
+  };
+
+  const closeMiniPlayer = () => {
+    if (fullAudioRef.current) {
+      fullAudioRef.current.pause();
+    }
+    setIsPlayingFull(false);
+    setShowMiniPlayer(false);
+  };
 
   if (isLoading) {
     return (
@@ -95,7 +139,7 @@ export default function SuratDetailPage() {
   if (!surat) return <div className="p-6 text-center">Surat tidak ditemukan.</div>;
 
   return (
-    <div className="min-h-screen pb-24 relative bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen pb-32 relative bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       
       {/* 1. STICKY HEADER */}
       <div className="sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 p-4 flex items-center justify-between shadow-sm">
@@ -106,17 +150,14 @@ export default function SuratDetailPage() {
           <h1 className="font-bold text-lg text-gray-900 dark:text-white leading-tight">{surat.namaLatin}</h1>
           <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold">{surat.arti} • {surat.jumlahAyat} Ayat</p>
         </div>
-        <button 
-          onClick={() => setShowSettings(true)} 
-          className="text-gray-700 dark:text-white p-2 hover:bg-islamic-50 dark:hover:bg-gray-800 rounded-full transition"
-        >
+        <button onClick={() => setShowSettings(true)} className="text-gray-700 dark:text-white p-2 hover:bg-islamic-50 dark:hover:bg-gray-800 rounded-full transition">
           <BiCog size={24} />
         </button>
       </div>
 
       <div className="p-4 max-w-3xl mx-auto">
         
-        {/* 2. BANNER INFORMASI SURAT */}
+        {/* 2. BANNER INFORMASI SURAT & TOMBOL AUDIO FULL */}
         <div className="bg-linear-to-br from-islamic-700 to-islamic-900 rounded-[2.5rem] p-10 text-center text-white shadow-2xl mb-10 relative overflow-hidden border border-islamic-600">
           <div className="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
             <span className="font-arab text-9xl">{surat.nama}</span>
@@ -124,29 +165,30 @@ export default function SuratDetailPage() {
           <h2 className="font-arab text-5xl mb-4 relative z-10">{surat.nama}</h2>
           <p className="text-sm font-bold text-gold-400 relative z-10 uppercase tracking-[0.3em]">{surat.namaLatin}</p>
           <div className="w-16 h-1 bg-gold-500/40 mx-auto my-6 rounded-full relative z-10"></div>
-          <p className="text-xs opacity-90 relative z-10 font-bold tracking-widest">
+          
+          <p className="text-xs opacity-90 relative z-10 font-bold tracking-widest mb-6">
             {surat.tempatTurun.toUpperCase()} • {surat.jumlahAyat} AYAT
           </p>
+
+          {/* TOMBOL PUTAR FULL SURAT */}
+          <button 
+            onClick={toggleFullAudio}
+            className="relative z-10 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center mx-auto transition-all active:scale-95 shadow-lg"
+          >
+            {isPlayingFull ? <BiPauseCircle size={24} className="mr-2 animate-pulse" /> : <BiPlayCircle size={24} className="mr-2" />}
+            {isPlayingFull ? 'Jeda Murottal' : 'Putar Murottal Full'}
+          </button>
         </div>
 
-        {/* 3. MENU TOGGLE CEPAT (Quick Access Toggles) */}
+        {/* 3. MENU TOGGLE CEPAT (Mushaf/List/Hafalan) */}
         <div className="flex gap-2 mb-8 bg-white/50 dark:bg-gray-800/50 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
-           <button 
-             onClick={() => { setViewMode('mushaf'); handleUpdateSettings({viewMode: 'mushaf'}); }}
-             className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-xs font-bold transition-all ${viewMode === 'mushaf' ? 'bg-white dark:bg-gray-700 shadow-md text-islamic-600 dark:text-gold-400' : 'text-gray-400'}`}
-           >
+           <button onClick={() => { setViewMode('mushaf'); handleUpdateSettings({viewMode: 'mushaf'}); }} className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-xs font-bold transition-all ${viewMode === 'mushaf' ? 'bg-white dark:bg-gray-700 shadow-md text-islamic-600 dark:text-gold-400' : 'text-gray-400'}`}>
              <BiBookReader className="mr-2" size={18}/> Mushaf
            </button>
-           <button 
-             onClick={() => { setViewMode('list'); handleUpdateSettings({viewMode: 'list'}); }}
-             className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-md text-islamic-600 dark:text-gold-400' : 'text-gray-400'}`}
-           >
+           <button onClick={() => { setViewMode('list'); handleUpdateSettings({viewMode: 'list'}); }} className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-md text-islamic-600 dark:text-gold-400' : 'text-gray-400'}`}>
              <BiListUl className="mr-2" size={18}/> List
            </button>
-           <button 
-             onClick={() => setModeHafalan(!modeHafalan)}
-             className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-xs font-bold transition-all ${modeHafalan ? 'bg-gold-500 text-white shadow-md' : 'text-gray-400'}`}
-           >
+           <button onClick={() => setModeHafalan(!modeHafalan)} className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-xs font-bold transition-all ${modeHafalan ? 'bg-gold-500 text-white shadow-md' : 'text-gray-400'}`}>
              <BiHide className="mr-2" size={18}/> Hafalan
            </button>
         </div>
@@ -160,18 +202,13 @@ export default function SuratDetailPage() {
 
         {/* 5. AREA BACAAN UTAMA */}
         {viewMode === 'mushaf' ? (
-          // --- MODE MUSHAF (Full Arab) ---
           <div className="bg-white dark:bg-gray-800 p-8 md:p-12 rounded-[3rem] shadow-sm border border-gray-100 dark:border-gray-700 transition-all duration-300" dir="rtl">
-            <p 
-              className={`text-justify leading-[2.8] text-gray-800 dark:text-gray-100 ${fontFamily}`}
-              style={{ fontSize: `${fontSize}px` }}
-            >
+            <p className={`text-justify leading-[2.8] text-gray-800 dark:text-gray-100 ${fontFamily}`} style={{ fontSize: `${fontSize}px` }}>
               {surat.ayat.map((ayat) => (
                 <span key={ayat.nomorAyat} id={`ayat-${ayat.nomorAyat}`} className="inline scroll-mt-28">
                   <span className={`transition-all duration-500 cursor-pointer ${modeHafalan ? 'text-transparent bg-gray-100 dark:bg-gray-700 rounded-md px-2 blur-sm hover:blur-none hover:text-gray-800 dark:hover:text-white hover:bg-transparent' : ''}`}>
                     {ayat.teksArab}
                   </span>
-                  {/* Ornamen Nomor Ayat */}
                   <span className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-islamic-100 text-islamic-600 dark:text-gold-500 dark:border-gray-700 text-xs font-bold font-sans mx-4 align-middle bg-gray-50/50 dark:bg-gray-900/30 shadow-inner">
                     {ayat.nomorAyat}
                   </span>
@@ -180,38 +217,46 @@ export default function SuratDetailPage() {
             </p>
           </div>
         ) : (
-          // --- MODE LIST (Detail Card) ---
           <div className="space-y-8">
             {surat.ayat.map((ayat) => (
               <AyatCard 
-                key={ayat.nomorAyat}
-                nomorSurah={surat.nomor}
-                surahName={surat.namaLatin}
-                nomorAyat={ayat.nomorAyat}
-                teksArab={ayat.teksArab}
-                teksLatin={modeHafalan ? '' : ayat.teksLatin}
-                terjemahan={modeHafalan ? 'Mode Hafalan Aktif: Klik teks Arab untuk mengintip.' : ayat.teksIndonesia}
-                audioUrl={ayat.audio['05']}
-                fontSize={fontSize}
-                fontFamily={fontFamily}
-                showPosterBtn={showPosterBtn}
+                key={ayat.nomorAyat} nomorSurah={surat.nomor} surahName={surat.namaLatin} nomorAyat={ayat.nomorAyat} teksArab={ayat.teksArab} teksLatin={modeHafalan ? '' : ayat.teksLatin} terjemahan={modeHafalan ? 'Mode Hafalan Aktif.' : ayat.teksIndonesia} audioUrl={ayat.audio['05']} fontSize={fontSize} fontFamily={fontFamily} showPosterBtn={showPosterBtn}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* 6. MODAL PENGATURAN (Bottom Sheet) */}
+      {/* 6. MODAL PENGATURAN */}
       <SettingsModal 
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-        fontSize={fontSize}
-        setFontSize={(s: number) => { setFontSize(s); handleUpdateSettings({fontSize: s}); }}
-        fontFamily={fontFamily}
-        setFontFamily={(f: string) => { setFontFamily(f); handleUpdateSettings({fontFamily: f}); }}
-        showPosterBtn={showPosterBtn}
-        setShowPosterBtn={(v: boolean) => { setShowPosterBtn(v); handleUpdateSettings({showPosterBtn: v}); }}
+        isOpen={showSettings} onClose={() => setShowSettings(false)} fontSize={fontSize} setFontSize={(s: number) => { setFontSize(s); handleUpdateSettings({fontSize: s}); }} fontFamily={fontFamily} setFontFamily={(f: string) => { setFontFamily(f); handleUpdateSettings({fontFamily: f}); }} showPosterBtn={showPosterBtn} setShowPosterBtn={(v: boolean) => { setShowPosterBtn(v); handleUpdateSettings({showPosterBtn: v}); }}
       />
+
+      {/* 7. MINI PLAYER MENGAMBANG (FLOATING PLAYER SULTAN) */}
+      {showMiniPlayer && (
+        <div className="fixed bottom-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-md bg-white dark:bg-gray-800 rounded-3xl p-4 shadow-2xl border border-gray-100 dark:border-gray-700 flex items-center justify-between z-50 transition-transform duration-500">
+          <div className="flex items-center">
+            {/* Animasi Piringan Hitam berputar jika sedang play */}
+            <div className={`w-12 h-12 bg-islamic-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-islamic-600 dark:text-gold-400 mr-3 shadow-inner ${isPlayingFull ? 'animate-spin-slow' : ''}`}>
+              <BiHeadphone size={24} className={isPlayingFull ? 'animate-pulse' : ''} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-islamic-500 dark:text-gold-400 uppercase tracking-widest mb-0.5">Murottal Full</p>
+              <p className="text-sm font-black text-gray-800 dark:text-white leading-none">Surat {surat.namaLatin}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <button onClick={toggleFullAudio} className="text-islamic-600 dark:text-gold-400 hover:scale-110 active:scale-95 transition-all p-1">
+              {isPlayingFull ? <BiPauseCircle size={44} /> : <BiPlayCircle size={44} />}
+            </button>
+            <button onClick={closeMiniPlayer} className="text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-all p-2">
+              <BiX size={24} />
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

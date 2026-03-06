@@ -25,11 +25,18 @@ export default function DoaPage() {
       const prompt = `Saya sedang merasa: "${curhat}". Berikan saya nasihat Islami yang sangat menenangkan hati, beserta satu rekomendasi doa pendek (maksimal 20 kata) yang relevan dengan kondisi saya. Balas HANYA dengan format JSON persis seperti ini tanpa tambahan teks/markdown apapun: {"nasihat": "1-2 paragraf nasihat penuh empati", "arab": "Teks Arab Doa", "latin": "Teks Latin", "arti": "Terjemahan", "sumber": "Sumber doa (misal: Q.S. Al-Baqarah: 286 atau HR. Bukhari)"}`;
       
       const response = await callGeminiAPI(prompt);
+      
+      // CCTV 1: Kita lihat balasan mentah dari AI di Console
+      console.log("BALASAN MENTAH GEMINI:", response); 
+      
       const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsedData = JSON.parse(cleanedResponse);
       
       setData(parsedData);
-    } catch { 
+    } catch (error) { 
+      // CCTV 2: Kita lihat error aslinya di Console
+      console.error("ERROR GEMINI TERDETEKSI:", error); 
+      
       setData({
         nasihat: "Koneksi AI sedang sibuk. Tarik napas, tenangkan diri, dan bacalah doa ini agar hatimu lapang.",
         arab: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي",

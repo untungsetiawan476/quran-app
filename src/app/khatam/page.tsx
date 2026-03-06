@@ -1,16 +1,15 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-// BiTrophy sudah dihapus dari import agar ESLint tidak marah
 import { BiArrowBack, BiTargetLock, BiCheckCircle, BiReset, BiBookOpen } from 'react-icons/bi';
 import { BsStars } from 'react-icons/bs';
 
 interface KhatamPlan {
   startDate: string;
   targetDays: number;
-  pagesPerDay: number;
+  itemsPerDay: number; // Sekarang ini adalah jumlah AYAT per hari
   currentDay: number;
-  completedPages: number;
+  completedItems: number; // Jumlah ayat yang sudah dibaca
   isTodayDone: boolean;
   lastReadDate: string;
 }
@@ -23,7 +22,33 @@ interface ConfettiPiece {
   rotation: string;
 }
 
-const TOTAL_PAGES = 604; // Total halaman mushaf Madinah standar
+// ==========================================================
+// DATA KAMUS AL-QUR'AN (Untuk konversi Ayat Global ke Surat)
+// ==========================================================
+const TOTAL_AYAHS = 6236; 
+
+const surahNames = [
+  "Al-Fatihah","Al-Baqarah","Ali 'Imran","An-Nisa'","Al-Ma'idah","Al-An'am","Al-A'raf","Al-Anfal","At-Taubah","Yunus","Hud","Yusuf","Ar-Ra'd","Ibrahim","Al-Hijr","An-Nahl","Al-Isra'","Al-Kahf","Maryam","Taha","Al-Anbiya'","Al-Hajj","Al-Mu'minun","An-Nur","Al-Furqan","Asy-Syu'ara'","An-Naml","Al-Qasas","Al-'Ankabut","Ar-Rum","Luqman","As-Sajdah","Al-Ahzab","Saba'","Fatir","Yasin","As-Saffat","Sad","Az-Zumar","Ghafir","Fussilat","Asy-Syura","Az-Zukhruf","Ad-Dukhan","Al-Jasiyah","Al-Ahqaf","Muhammad","Al-Fath","Al-Hujurat","Qaf","Az-Zariyat","At-Tur","An-Najm","Al-Qamar","Ar-Rahman","Al-Waqi'ah","Al-Hadid","Al-Mujadilah","Al-Hasyr","Al-Mumtahanah","As-Saff","Al-Jumu'ah","Al-Munafiqun","At-Taghabun","At-Talaq","At-Tahrim","Al-Mulk","Al-Qalam","Al-Haqqah","Al-Ma'arij","Nuh","Al-Jinn","Al-Muzzammil","Al-Muddassir","Al-Qiyamah","Al-Insan","Al-Mursalat","An-Naba'","An-Nazi'at","'Abasa","At-Takwir","Al-Infitar","Al-Mutaffifin","Al-Insyiqaq","Al-Buruj","At-Tariq","Al-A'la","Al-Ghasyiyah","Al-Fajr","Al-Balad","Asy-Syams","Al-Lail","Ad-Duha","Asy-Syarh","At-Tin","Al-'Alaq","Al-Qadr","Al-Bayyinah","Az-Zalzalah","Al-'Adiyat","Al-Qari'ah","At-Takasur","Al-'Asr","Al-Humazah","Al-Fil","Quraisy","Al-Ma'un","Al-Kausar","Al-Kafirun","An-Nasr","Al-Lahab","Al-Ikhlas","Al-Falaq","An-Nas"
+];
+
+const ayahCounts = [
+  7,286,200,176,120,165,206,75,129,109,111,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6
+];
+
+// Fungsi cerdas mengubah "Ayat ke-250" menjadi "Surat Al-Baqarah ayat 243"
+function getSurahAyah(globalIndex: number) {
+  if (globalIndex <= 0) return { surahName: "Al-Fatihah", ayat: 1 };
+  if (globalIndex > TOTAL_AYAHS) return { surahName: "An-Nas", ayat: 6 };
+  
+  let current = globalIndex;
+  for (let i = 0; i < 114; i++) {
+    if (current <= ayahCounts[i]) {
+      return { surahName: surahNames[i], ayat: current };
+    }
+    current -= ayahCounts[i];
+  }
+  return { surahName: "An-Nas", ayat: 6 };
+}
 
 export default function KhatamPlannerPage() {
   const [plan, setPlan] = useState<KhatamPlan | null>(null);
@@ -32,11 +57,9 @@ export default function KhatamPlannerPage() {
   const [confettiPieces, setConfettiPieces] = useState<ConfettiPiece[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // 1. Ambil data plan dari localStorage
   useEffect(() => {
-    const savedPlan = localStorage.getItem('quran_khatam_plan');
+    const savedPlan = localStorage.getItem('quran_khatam_plan_v2'); // Ganti key agar target lama yg pakai halaman kerefresh
     
-    // Jurus setTimeout agar ESLint tidak mengeluh "synchronous update"
     setTimeout(() => {
       if (savedPlan) {
         const parsed: KhatamPlan = JSON.parse(savedPlan);
@@ -45,7 +68,7 @@ export default function KhatamPlannerPage() {
         if (parsed.lastReadDate !== today && parsed.isTodayDone) {
           parsed.isTodayDone = false;
           parsed.currentDay += 1; 
-          localStorage.setItem('quran_khatam_plan', JSON.stringify(parsed));
+          localStorage.setItem('quran_khatam_plan_v2', JSON.stringify(parsed));
         }
         setPlan(parsed);
       }
@@ -53,23 +76,21 @@ export default function KhatamPlannerPage() {
     }, 0);
   }, []);
 
-  // 2. Buat Rencana Baru
   const handleCreatePlan = () => {
-    const pagesPerDay = Math.ceil(TOTAL_PAGES / targetDays);
+    const itemsPerDay = Math.ceil(TOTAL_AYAHS / targetDays);
     const newPlan: KhatamPlan = {
       startDate: new Date().toDateString(),
       targetDays,
-      pagesPerDay,
+      itemsPerDay,
       currentDay: 1,
-      completedPages: 0,
+      completedItems: 0,
       isTodayDone: false,
       lastReadDate: ''
     };
     setPlan(newPlan);
-    localStorage.setItem('quran_khatam_plan', JSON.stringify(newPlan));
+    localStorage.setItem('quran_khatam_plan_v2', JSON.stringify(newPlan));
   };
 
-  // 3. Tandai Selesai Hari Ini
   const handleCompleteToday = () => {
     if (!plan) return;
     
@@ -90,29 +111,30 @@ export default function KhatamPlannerPage() {
 
     const updatedPlan = {
       ...plan,
-      completedPages: Math.min(plan.completedPages + plan.pagesPerDay, TOTAL_PAGES),
+      completedItems: Math.min(plan.completedItems + plan.itemsPerDay, TOTAL_AYAHS),
       isTodayDone: true,
       lastReadDate: new Date().toDateString()
     };
     
     setPlan(updatedPlan);
-    localStorage.setItem('quran_khatam_plan', JSON.stringify(updatedPlan));
+    localStorage.setItem('quran_khatam_plan_v2', JSON.stringify(updatedPlan));
   };
 
-  // 4. Hapus Rencana
   const handleReset = () => {
     if(confirm('Yakin ingin mereset dan mengulang target Khatam dari awal?')) {
       setPlan(null);
-      localStorage.removeItem('quran_khatam_plan');
+      localStorage.removeItem('quran_khatam_plan_v2');
     }
   };
 
   if (!isLoaded) return <div className="min-h-screen bg-gray-50 dark:bg-gray-900"></div>;
 
-  const progressPercent = plan ? Math.min(Math.round((plan.completedPages / TOTAL_PAGES) * 100), 100) : 0;
-  const sisaHalaman = plan ? TOTAL_PAGES - plan.completedPages : TOTAL_PAGES;
-  const startPageToday = plan ? plan.completedPages + 1 : 1;
-  const endPageToday = plan ? Math.min(plan.completedPages + plan.pagesPerDay, TOTAL_PAGES) : 1;
+  const progressPercent = plan ? Math.min(Math.round((plan.completedItems / TOTAL_AYAHS) * 100), 100) : 0;
+  const sisaAyat = plan ? TOTAL_AYAHS - plan.completedItems : TOTAL_AYAHS;
+  
+  // Hitung detail surat dan ayat untuk dibaca hari ini
+  const startRead = plan ? getSurahAyah(plan.completedItems + 1) : null;
+  const endRead = plan ? getSurahAyah(Math.min(plan.completedItems + plan.itemsPerDay, TOTAL_AYAHS)) : null;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-32 relative overflow-hidden">
@@ -153,7 +175,7 @@ export default function KhatamPlannerPage() {
             <BiTargetLock size={36} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-1">Rencana Khatam</h1>
-          <p className="text-emerald-100 text-sm">Konsisten setiap hari, pasti sampai.</p>
+          <p className="text-emerald-100 text-sm">Target jelas, ibadah tuntas.</p>
         </div>
       </div>
 
@@ -168,7 +190,7 @@ export default function KhatamPlannerPage() {
               <BsStars className="text-gold-500 mr-2" size={20} /> Target Khatam Anda
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Pilih dalam berapa hari Anda ingin menyelesaikan bacaan 30 Juz (604 halaman).
+              Pilih dalam berapa hari Anda ingin menyelesaikan bacaan 30 Juz (6.236 Ayat).
             </p>
             
             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -183,7 +205,7 @@ export default function KhatamPlannerPage() {
                   }`}
                 >
                   {hari} Hari
-                  <div className="text-xs font-normal mt-1 opacity-70">{Math.ceil(TOTAL_PAGES/hari)} hal/hari</div>
+                  <div className="text-xs font-normal mt-1 opacity-70">~{Math.ceil(TOTAL_AYAHS/hari)} ayat/hari</div>
                 </button>
               ))}
             </div>
@@ -233,12 +255,12 @@ export default function KhatamPlannerPage() {
 
               <div className="flex w-full justify-between text-center divide-x divide-gray-100 dark:divide-gray-700 border-t border-gray-100 dark:border-gray-700 pt-4 mt-2">
                 <div className="flex-1">
-                  <p className="text-xs text-gray-400 mb-1">Sudah Dibaca</p>
-                  <p className="font-bold text-emerald-600 dark:text-emerald-400">{plan.completedPages} Hal</p>
+                  <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">Sudah Dibaca</p>
+                  <p className="font-bold text-emerald-600 dark:text-emerald-400">{plan.completedItems} Ayat</p>
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-gray-400 mb-1">Sisa</p>
-                  <p className="font-bold text-amber-500">{sisaHalaman} Hal</p>
+                  <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">Sisa Target</p>
+                  <p className="font-bold text-amber-500">{sisaAyat} Ayat</p>
                 </div>
               </div>
             </div>
@@ -250,19 +272,28 @@ export default function KhatamPlannerPage() {
               </div>
               
               <div className="relative z-10">
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center mb-5">
                   <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                     Hari ke-{plan.currentDay} dari {plan.targetDays}
                   </span>
                   {plan.isTodayDone && <BiCheckCircle size={28} className="text-gold-400" />}
                 </div>
 
-                <h2 className="text-3xl font-black mb-1">
-                  {progressPercent === 100 ? 'Khatam!' : `Halaman ${startPageToday} - ${endPageToday}`}
-                </h2>
-                <p className="text-islamic-100 text-sm mb-6 opacity-90">
-                  Target harian: <span className="font-bold text-gold-300">{plan.pagesPerDay} halaman</span>
-                </p>
+                {progressPercent === 100 ? (
+                   <h2 className="text-3xl font-black mb-6">Khatam!</h2>
+                ) : (
+                  <>
+                    <p className="text-islamic-100 text-xs font-medium uppercase tracking-widest mb-2">BACAAN HARI INI:</p>
+                    <div className="mb-6 space-y-1">
+                      <h2 className="text-xl font-bold leading-snug">
+                         Mulai: <span className="text-gold-300">{startRead?.surahName} (Ayat {startRead?.ayat})</span>
+                      </h2>
+                      <h2 className="text-xl font-bold leading-snug">
+                         Selesai: <span className="text-gold-300">{endRead?.surahName} (Ayat {endRead?.ayat})</span>
+                      </h2>
+                    </div>
+                  </>
+                )}
 
                 {progressPercent === 100 ? (
                   <div className="bg-gold-500 text-white font-bold py-4 rounded-2xl text-center shadow-lg border-2 border-gold-400">

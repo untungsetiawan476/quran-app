@@ -1,10 +1,15 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { BiBookOpen, BiRightArrowAlt, BiTimeFive } from 'react-icons/bi';
-import { BsStars, BsGrid1X2 } from 'react-icons/bs';
-import { LuBrainCircuit } from 'react-icons/lu';
-import { TbCompass } from 'react-icons/tb';
+import { 
+  BiTimeFive, 
+  BiRightArrowAlt, 
+  BiBookOpen, 
+  BiTrophy, 
+  BiWrench, 
+  BiCompass, 
+  BiCalendarEvent 
+} from 'react-icons/bi';
 import PrayerTimes from '@/components/PrayerTimes';
 import AyatHarian from '@/components/AyatHarian';
 import StatistikDashboard from '@/components/StatistikDashboard';
@@ -35,16 +40,11 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
-  const quickAccess = [
-    { title: "Baca Al-Qur'an", desc: "Mushaf & Tafsir", icon: <BiBookOpen size={24} />, path: '/quran', bg: 'bg-islamic-500', shadow: 'shadow-islamic-500/30' },
-    { title: "Kuis Hafalan", desc: "Uji daya ingat", icon: <LuBrainCircuit size={24} />, path: '/kuis', bg: 'bg-gold-500', shadow: 'shadow-gold-500/30' },
-    { title: "Pusat Doa", desc: "Kumpulan wirid", icon: <BsStars size={24} />, path: '/doa', bg: 'bg-purple-500', shadow: 'shadow-purple-500/30' },
-    { title: "Tools Islami", desc: "Tasbih & lainnya", icon: <TbCompass size={24} />, path: '/tools', bg: 'bg-blue-500', shadow: 'shadow-blue-500/30' },
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24">
-      {/* 1. HERO SECTION */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-28">
+      {/* ========================================== */}
+      {/* 1. HERO SECTION (Ucapan Selamat Datang)  */}
+      {/* ========================================== */}
       <div className="relative">
         <div className="bg-islamic-900 rounded-b-[2.5rem] pt-12 pb-24 px-6 relative overflow-hidden shadow-xl shadow-islamic-900/20">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
@@ -61,7 +61,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 2. KARTU TERAKHIR DIBACA (Melayang) */}
+        {/* ========================================== */}
+        {/* 2. KARTU TERAKHIR DIBACA (Melayang)        */}
+        {/* ========================================== */}
         <div className="px-5 relative -mt-16 z-20">
           <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl p-5 shadow-xl flex items-center justify-between group">
             <div>
@@ -91,42 +93,64 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="px-5 mt-6 space-y-6">
+      <div className="px-5 mt-6 space-y-8">
         
-        {/* 3. DASHBOARD STATISTIK (Posisi yang Benar) */}
-        <StatistikDashboard />
+        {/* ========================================== */}
+        {/* 3. MENU PINTASAN CEPAT (Tools & Kuis)      */}
+        {/* ========================================== */}
+        <div className="grid grid-cols-4 gap-4 animate-fade-in-up">
+          {/* Tombol 1: Kuis Hafalan */}
+          <Link href="/kuis" className="flex flex-col items-center group">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-active:scale-95 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50">
+              <BiTrophy size={28} />
+            </div>
+            <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Kuis</span>
+          </Link>
 
-        {/* 4. MENU CEPAT EKSPLORASI */}
-        <div>
-          <div className="flex items-center justify-between mb-4 px-1">
-            <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center">
-              <BsGrid1X2 className="mr-2 text-islamic-500" size={18} /> Eksplorasi
-            </h3>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {quickAccess.map((item, idx) => (
-              <Link href={item.path} key={idx} className="block group">
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1 relative overflow-hidden h-full">
-                  <div className={`w-10 h-10 ${item.bg} text-white rounded-2xl flex items-center justify-center mb-3 shadow-md ${item.shadow} group-hover:scale-110 transition-transform`}>
-                    {item.icon}
-                  </div>
-                  <h4 className="font-bold text-gray-800 dark:text-white text-sm mb-0.5" dangerouslySetInnerHTML={{ __html: item.title }} />
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400">{item.desc}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {/* Tombol 2: Tasbih & Tools */}
+          <Link href="/tools" className="flex flex-col items-center group">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-active:scale-95 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50">
+              <BiWrench size={28} />
+            </div>
+            <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Tasbih</span>
+          </Link>
+
+          {/* Tombol 3: Arah Kiblat */}
+          <Link href="#" className="flex flex-col items-center group opacity-80 hover:opacity-100">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-active:scale-95 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/50">
+              <BiCompass size={28} />
+            </div>
+            <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Kiblat</span>
+          </Link>
+
+          {/* Tombol 4: Jadwal Sholat */}
+          <Link href="#" className="flex flex-col items-center group opacity-80 hover:opacity-100">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-active:scale-95 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50">
+              <BiCalendarEvent size={28} />
+            </div>
+            <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Jadwal</span>
+          </Link>
         </div>
 
-        {/* 5. JADWAL SHOLAT */}
+        {/* ========================================== */}
+        {/* 4. DASHBOARD STATISTIK                     */}
+        {/* ========================================== */}
+        <StatistikDashboard />
+
+        {/* ========================================== */}
+        {/* 5. JADWAL SHOLAT WIDGET                    */}
+        {/* ========================================== */}
         <div className="relative">
           <PrayerTimes />
         </div>
 
-        {/* 6. AYAT HARIAN */}
+        {/* ========================================== */}
+        {/* 6. AYAT HARIAN AI                          */}
+        {/* ========================================== */}
         <div className="relative pb-6">
           <AyatHarian />
         </div>
+        
       </div>
     </div>
   );

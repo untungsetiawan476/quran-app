@@ -136,11 +136,13 @@ export default function AyatCard({
     
     if (!exists) {
       allPlaylists[folderName].push({
+        id: `${nomorSurah}-${nomorAyat}`, // PERBAIKAN 1: Tambah ID
         surah: nomorSurah,
         surahName: surahName,
         ayat: nomorAyat,
         teksArab: teksArab,
-        terjemahan: terjemahan
+        terjemahan: terjemahan,
+        audioUrl: audioUrl // PERBAIKAN 2: Masukkan audio agar bisa diputar di playlist!
       });
       localStorage.setItem('quran_playlists', JSON.stringify(allPlaylists));
     }
@@ -175,14 +177,12 @@ export default function AyatCard({
     setIsGeneratingPoster(false);
   };
 
-  // LOGIKA SMART POSTER (Menyesuaikan ukuran berdasarkan panjang teks)
   const isSangatPanjang = teksArab.length > 250;
   const isPanjang = teksArab.length > 120;
   const arabFontSize = isSangatPanjang ? '42px' : isPanjang ? '55px' : '80px';
   const arabLineHeight = isSangatPanjang ? '1.7' : isPanjang ? '1.9' : '2.2';
   
   const terjemahanFontSize = terjemahan.length > 200 ? '24px' : '32px';
-  // Kita potong terjemahan jika kelewat panjang (misal Ayat Kursi/Al-Baqarah 282)
   const terjemahanAman = terjemahan.length > 350 ? terjemahan.substring(0, 350) + '...' : terjemahan;
   const tafsirAman = tafsir ? (tafsir.length > 200 ? tafsir.substring(0, 200) + '...' : tafsir) : '';
 
@@ -221,19 +221,19 @@ export default function AyatCard({
 
           {showPlaylistMenu && (
             <div className="absolute top-12 right-0 z-20 bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xl w-64 animate-fade-in-down">
-              <h4 className="text-[10px] font-bold text-gray-400 mb-3 uppercase tracking-widest">Simpan ke Koleksi</h4>
+              <h4 className="text-[10px] font-bold text-gray-400 mb-3 uppercase tracking-widest">Simpan ke Folder</h4>
               {saveSuccess ? (
-                <div className="flex items-center text-islamic-600 dark:text-islamic-400 text-sm font-bold py-2 italic">
+                <div className="flex items-center text-emerald-600 dark:text-emerald-400 text-sm font-bold py-2 italic">
                   <BiCheckCircle size={20} className="mr-2" /> Berhasil Tersimpan!
                 </div>
               ) : (
                 <>
                   <div className="max-h-32 overflow-y-auto mb-3 space-y-1">
                     {playlists.length === 0 ? (
-                      <p className="text-xs text-gray-400 italic py-2">Belum ada folder koleksi.</p>
+                      <p className="text-xs text-gray-400 italic py-2">Belum ada folder.</p>
                     ) : (
                       playlists.map((folder, idx) => (
-                        <button key={idx} onClick={() => handleSaveToPlaylist(folder)} className="w-full text-left px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-islamic-50 dark:hover:bg-gray-700 rounded-xl transition-all">
+                        <button key={idx} onClick={() => handleSaveToPlaylist(folder)} className="w-full text-left px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-gray-700 rounded-xl transition-all">
                           📁 {folder}
                         </button>
                       ))
@@ -246,9 +246,10 @@ export default function AyatCard({
                         value={newPlaylistName}
                         onChange={(e) => setNewPlaylistName(e.target.value)}
                         placeholder="Folder Baru..." 
-                        className="w-full text-xs px-3 py-2 border dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 dark:text-white outline-none focus:border-islamic-500"
+                        className="w-full text-xs px-3 py-2 border dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 dark:text-white outline-none focus:border-emerald-500"
                       />
-                      <button onClick={() => newPlaylistName.trim() && handleSaveToPlaylist(newPlaylistName.trim())} disabled={!newPlaylistName.trim()} className="bg-islamic-600 text-white p-2 rounded-xl disabled:opacity-50 hover:bg-islamic-700 shadow-sm">
+                      {/* PERBAIKAN 3: Tombol Simpan diganti jadi bg-emerald-600 agar cerah dan kelihatan! */}
+                      <button onClick={() => newPlaylistName.trim() && handleSaveToPlaylist(newPlaylistName.trim())} disabled={!newPlaylistName.trim()} className="bg-emerald-600 text-white p-2 rounded-xl disabled:opacity-50 hover:bg-emerald-700 shadow-sm shrink-0">
                         <BiFolderPlus size={20} />
                       </button>
                     </div>
@@ -288,11 +289,7 @@ export default function AyatCard({
         </div>
       </div>
       
-      <div 
-        className={`${fontFamily} leading-[2.2] text-right mb-6 text-gray-800 dark:text-gray-100 transition-all duration-300`} 
-        dir="rtl"
-        style={{ fontSize: `${fontSize}px` }}
-      >
+      <div className={`${fontFamily} leading-[2.2] text-right mb-6 text-gray-800 dark:text-gray-100 transition-all duration-300`} dir="rtl" style={{ fontSize: `${fontSize}px` }}>
         {!isQuizMode ? teksArab : teksArab.split(' ').map((word, idx) => (
           <span key={idx} className="inline-block mx-1">
             {hiddenWords.includes(idx) ? (
@@ -316,9 +313,7 @@ export default function AyatCard({
         </div>
       )}
 
-      {/* ========================================================== */}
-      {/* KANVAS SMART POSTER (Anti Manjang)                         */}
-      {/* ========================================================== */}
+      {/* KANVAS SMART POSTER */}
       <div id={`poster-${nomorAyat}`} style={{ display: 'none', width: '1080px', padding: '60px', backgroundColor: '#0f172a', color: 'white', fontFamily: 'sans-serif' }}>
         <div style={{ border: '4px solid #fbbf24', borderRadius: '50px', padding: '60px', position: 'relative', backgroundColor: 'rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column', gap: '40px' }}>
           
@@ -355,7 +350,6 @@ export default function AyatCard({
           </div>
         </div>
       </div>
-
     </div>
   );
 }

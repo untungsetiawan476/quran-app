@@ -8,17 +8,19 @@ export const callGeminiAPI = async (prompt: string, retries = 3): Promise<string
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  // PERBAIKAN: Turun ke model 1.5 Flash yang kuota gratisnya jauh lebih besar!
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  
+  // PERBAIKAN: Menggunakan nama model paling aman yang pasti dikenali oleh semua sistem Google
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
   try {
-    console.log("Mencoba memanggil model: gemini-1.5-flash...");
+    console.log("Mencoba memanggil model: gemini-pro...");
     const result = await model.generateContent(prompt);
     const text = result.response.text();
     return text;
   } catch (error: unknown) {
     const err = error as { status?: number; message?: string };
     
+    // Auto-Retry kalau kena limit (429)
     if (err?.status === 429 && retries > 0) {
       console.warn(`Gemini API kena blokir sementara (429). Menunggu 3 detik... (Sisa percobaan: ${retries - 1})`);
       await new Promise(resolve => setTimeout(resolve, 3000));

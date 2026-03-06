@@ -143,7 +143,7 @@ export default function PlaylistPage() {
             </div>
             <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">Belum Ada Hafalan</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Mulai simpan ayat-ayat favorit atau target hafalan Mas Untung dari halaman baca Qur&apos;an.
+              Mulai simpan ayat-ayat favorit atau target hafalan dari halaman baca Qur&apos;an.
             </p>
             <Link href="/quran" className="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md">
               <BiLeftArrowAlt size={20} className="mr-2" /> Eksplorasi Qur&apos;an
@@ -213,4 +213,5 @@ export default function PlaylistPage() {
       )}
     </div>
   );
+
 }

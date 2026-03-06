@@ -1,29 +1,85 @@
 "use client";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BiHomeAlt, BiBookOpen, BiTrophy, BiHeart, BiWrench } from 'react-icons/bi';
+import { BiHomeAlt, BiHeart, BiBookOpen, BiVideoPlus, BiBookmark } from 'react-icons/bi';
 
 export default function BottomNav() {
   const pathname = usePathname();
 
-  const menus = [
-    { name: 'Beranda', path: '/', icon: <BiHomeAlt size={24} /> },
-    { name: "Al-Qur'an", path: '/quran', icon: <BiBookOpen size={24} /> },
-    { name: 'Kuis', path: '/kuis', icon: <BiTrophy size={24} /> },
-    { name: 'Doa', path: '/doa', icon: <BiHeart size={24} /> },
-    { name: 'Tools', path: '/tools', icon: <BiWrench size={24} /> },
-  ];
-
   return (
-    <nav className="fixed bottom-0 w-full bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pb-safe z-50 rounded-t-2xl shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)]">
-      <div className="flex justify-around items-center h-16 max-w-md mx-auto">
-        {menus.map((menu) => (
-          <Link href={menu.path} key={menu.path} className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${pathname === menu.path ? 'text-islamic-700 dark:text-gold-400 font-bold' : 'text-gray-500 dark:text-gray-400'}`}>
-            {menu.icon}
-            <span className="text-[10px]">{menu.name}</span>
-          </Link>
-        ))}
-      </div>
-    </nav>
+    <div className="fixed bottom-0 w-full z-50">
+      <nav className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 pb-safe rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.08)] relative">
+        <div className="flex justify-between items-center h-16 px-6 max-w-md mx-auto">
+          
+          {/* ================== MENU KIRI ================== */}
+          <div className="flex w-2/5 justify-between">
+            <NavItem 
+              href="/" 
+              icon={<BiHomeAlt size={24} />} 
+              label="Beranda" 
+              isActive={pathname === '/'} 
+            />
+            <NavItem 
+              href="/doa" 
+              icon={<BiHeart size={24} />} 
+              label="Doa" 
+              isActive={pathname === '/doa'} 
+            />
+          </div>
+
+          {/* ================== TOMBOL SULTAN DI TENGAH (AL-QUR'AN) ================== */}
+          <div className="absolute left-1/2 -translate-x-1/2 -top-7">
+            <Link href="/quran" className="flex flex-col items-center justify-center group">
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-xl transform transition-all duration-300 group-hover:scale-110 group-active:scale-95 border-4 border-white dark:border-gray-900 ${
+                pathname.startsWith('/quran') 
+                  ? 'bg-gold-500 text-white shadow-gold-500/40' 
+                  : 'bg-islamic-600 text-white shadow-islamic-600/40'
+              }`}>
+                <BiBookOpen size={32} />
+              </div>
+              <span className={`text-[10px] mt-1.5 font-bold transition-colors ${
+                pathname.startsWith('/quran') ? 'text-gold-500' : 'text-islamic-700 dark:text-gray-300'
+              }`}>
+                Qur&apos;an
+              </span>
+            </Link>
+          </div>
+
+          {/* ================== MENU KANAN ================== */}
+          <div className="flex w-2/5 justify-between">
+            <NavItem 
+              href="/studio" 
+              icon={<BiVideoPlus size={24} />} 
+              label="Studio" 
+              isActive={pathname === '/studio'} 
+            />
+            <NavItem 
+              href="/playlist" 
+              icon={<BiBookmark size={24} />} 
+              label="Koleksi" 
+              isActive={pathname === '/playlist'} 
+            />
+          </div>
+
+        </div>
+      </nav>
+    </div>
+  );
+}
+
+// Sub-komponen agar kodenya bersih dan tidak berulang
+function NavItem({ href, icon, label, isActive }: { href: string, icon: React.ReactNode, label: string, isActive: boolean }) {
+  return (
+    <Link 
+      href={href} 
+      className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-300 ${
+        isActive 
+          ? 'text-islamic-700 dark:text-gold-400 font-bold scale-110' 
+          : 'text-gray-400 dark:text-gray-500 hover:text-islamic-500'
+      }`}
+    >
+      {icon}
+      <span className="text-[10px] whitespace-nowrap">{label}</span>
+    </Link>
   );
 }

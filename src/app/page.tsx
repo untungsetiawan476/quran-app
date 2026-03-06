@@ -9,7 +9,7 @@ import {
   BiTrophy, 
   BiWrench, 
   BiCompass, 
-  BiCalendarEvent 
+  BiTargetLock 
 } from 'react-icons/bi';
 import PrayerTimes from '@/components/PrayerTimes';
 import AyatHarian from '@/components/AyatHarian';
@@ -124,14 +124,15 @@ export default function Home() {
             <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Kiblat</span>
           </Link>
 
-          {/* Tombol 4: Jadwal Sholat */}
-          <Link href="#" className="flex flex-col items-center group opacity-80 hover:opacity-100">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-active:scale-95 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50">
-              <BiCalendarEvent size={28} />
+          {/* Tombol 4: Khatam Planner (Sultan Feature) */}
+          <Link href="/khatam" className="flex flex-col items-center group">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-active:scale-95 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50 relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
+              <BiTargetLock size={28} />
             </div>
-            <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Jadwal</span>
+            <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Khatam</span>
           </Link>
-        </div>
+        </div> {/* <-- INI DIA DIV PENUTUP YANG TADI HILANG! */}
 
         {/* ========================================== */}
         {/* BANNER VIP: ASISTEN USTADZ AI (CHATBOT)    */}

@@ -7,9 +7,9 @@ import { BsStars } from 'react-icons/bs';
 interface KhatamPlan {
   startDate: string;
   targetDays: number;
-  itemsPerDay: number; // Sekarang ini adalah jumlah AYAT per hari
+  itemsPerDay: number; 
   currentDay: number;
-  completedItems: number; // Jumlah ayat yang sudah dibaca
+  completedItems: number; 
   isTodayDone: boolean;
   lastReadDate: string;
 }
@@ -35,7 +35,6 @@ const ayahCounts = [
   7,286,200,176,120,165,206,75,129,109,111,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6
 ];
 
-// Fungsi cerdas mengubah "Ayat ke-250" menjadi "Surat Al-Baqarah ayat 243"
 function getSurahAyah(globalIndex: number) {
   if (globalIndex <= 0) return { surahName: "Al-Fatihah", ayat: 1 };
   if (globalIndex > TOTAL_AYAHS) return { surahName: "An-Nas", ayat: 6 };
@@ -58,7 +57,7 @@ export default function KhatamPlannerPage() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const savedPlan = localStorage.getItem('quran_khatam_plan_v2'); // Ganti key agar target lama yg pakai halaman kerefresh
+    const savedPlan = localStorage.getItem('quran_khatam_plan_v2'); 
     
     setTimeout(() => {
       if (savedPlan) {
@@ -77,10 +76,13 @@ export default function KhatamPlannerPage() {
   }, []);
 
   const handleCreatePlan = () => {
-    const itemsPerDay = Math.ceil(TOTAL_AYAHS / targetDays);
+    // Pastikan minimal 1 hari (anti error kalau user masukin angka 0)
+    const safeTargetDays = Math.max(1, targetDays); 
+    const itemsPerDay = Math.ceil(TOTAL_AYAHS / safeTargetDays);
+    
     const newPlan: KhatamPlan = {
       startDate: new Date().toDateString(),
-      targetDays,
+      targetDays: safeTargetDays,
       itemsPerDay,
       currentDay: 1,
       completedItems: 0,
@@ -132,7 +134,6 @@ export default function KhatamPlannerPage() {
   const progressPercent = plan ? Math.min(Math.round((plan.completedItems / TOTAL_AYAHS) * 100), 100) : 0;
   const sisaAyat = plan ? TOTAL_AYAHS - plan.completedItems : TOTAL_AYAHS;
   
-  // Hitung detail surat dan ayat untuk dibaca hari ini
   const startRead = plan ? getSurahAyah(plan.completedItems + 1) : null;
   const endRead = plan ? getSurahAyah(Math.min(plan.completedItems + plan.itemsPerDay, TOTAL_AYAHS)) : null;
 
@@ -190,29 +191,52 @@ export default function KhatamPlannerPage() {
               <BsStars className="text-gold-500 mr-2" size={20} /> Target Khatam Anda
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Pilih dalam berapa hari Anda ingin menyelesaikan bacaan 30 Juz (6.236 Ayat).
+              Pilih atau ketik dalam berapa hari Anda ingin menyelesaikan bacaan 30 Juz (6.236 Ayat).
             </p>
             
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            {/* Tombol Pintasan Cepat */}
+            <div className="grid grid-cols-4 gap-2 mb-4">
               {[15, 30, 60, 90].map((hari) => (
                 <button 
                   key={hari}
                   onClick={() => setTargetDays(hari)}
-                  className={`py-4 rounded-2xl border-2 font-bold transition-all ${
+                  className={`py-3 rounded-xl border-2 font-bold transition-all text-sm ${
                     targetDays === hari 
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
                       : 'border-gray-100 dark:border-gray-700 bg-transparent text-gray-500 hover:border-emerald-200'
                   }`}
                 >
-                  {hari} Hari
-                  <div className="text-xs font-normal mt-1 opacity-70">~{Math.ceil(TOTAL_AYAHS/hari)} ayat/hari</div>
+                  {hari}
                 </button>
               ))}
             </div>
 
+            {/* Kolom Custom Input (Baru!) */}
+            <div className="mb-8">
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Atau Ketik Target Custom:</label>
+              <div className="flex items-center bg-gray-50 dark:bg-gray-700/50 border-2 border-gray-100 dark:border-gray-700 rounded-2xl p-2 focus-within:border-emerald-500 dark:focus-within:border-emerald-500 transition-colors">
+                <input 
+                  type="number" 
+                  min="1"
+                  max="1000"
+                  value={targetDays === 0 ? '' : targetDays}
+                  onChange={(e) => setTargetDays(Number(e.target.value) || 0)}
+                  className="bg-transparent w-full px-4 py-2 text-2xl font-black text-gray-800 dark:text-white outline-none text-center"
+                  placeholder="0"
+                />
+                <span className="pr-4 text-gray-400 font-bold">Hari</span>
+              </div>
+              
+              {/* Info Estimasi Cerdas */}
+              <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mt-3 text-center bg-emerald-50 dark:bg-emerald-900/20 py-2 rounded-xl">
+                Estimasi Bacaan: <span className="font-bold">~{Math.ceil(TOTAL_AYAHS / Math.max(1, targetDays))} ayat</span> / hari
+              </div>
+            </div>
+
             <button 
               onClick={handleCreatePlan}
-              className="w-full bg-linear-to-r from-emerald-500 to-teal-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center text-lg"
+              disabled={targetDays < 1}
+              className="w-full disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-emerald-500 to-teal-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center text-lg"
             >
               Mulai Perjalanan Khatam
             </button>

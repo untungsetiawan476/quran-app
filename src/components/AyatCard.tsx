@@ -175,6 +175,17 @@ export default function AyatCard({
     setIsGeneratingPoster(false);
   };
 
+  // LOGIKA SMART POSTER (Menyesuaikan ukuran berdasarkan panjang teks)
+  const isSangatPanjang = teksArab.length > 250;
+  const isPanjang = teksArab.length > 120;
+  const arabFontSize = isSangatPanjang ? '42px' : isPanjang ? '55px' : '80px';
+  const arabLineHeight = isSangatPanjang ? '1.7' : isPanjang ? '1.9' : '2.2';
+  
+  const terjemahanFontSize = terjemahan.length > 200 ? '24px' : '32px';
+  // Kita potong terjemahan jika kelewat panjang (misal Ayat Kursi/Al-Baqarah 282)
+  const terjemahanAman = terjemahan.length > 350 ? terjemahan.substring(0, 350) + '...' : terjemahan;
+  const tafsirAman = tafsir ? (tafsir.length > 200 ? tafsir.substring(0, 200) + '...' : tafsir) : '';
+
   return (
     <div id={`ayat-${nomorAyat}`} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-6 border border-gray-100 dark:border-gray-700 scroll-mt-24 transition-all duration-500 relative">
       <div className="flex justify-between items-start mb-6">
@@ -305,31 +316,42 @@ export default function AyatCard({
         </div>
       )}
 
-      {/* KANVAS POSTER RAHASIA DENGAN TAFSIR AI */}
-      <div id={`poster-${nomorAyat}`} style={{ display: 'none', width: '1080px', padding: '80px', backgroundColor: '#0f172a', color: 'white', fontFamily: 'sans-serif' }}>
-        <div style={{ border: '4px solid #fbbf24', borderRadius: '50px', padding: '80px', position: 'relative', backgroundColor: 'rgba(255,255,255,0.02)' }}>
+      {/* ========================================================== */}
+      {/* KANVAS SMART POSTER (Anti Manjang)                         */}
+      {/* ========================================================== */}
+      <div id={`poster-${nomorAyat}`} style={{ display: 'none', width: '1080px', padding: '60px', backgroundColor: '#0f172a', color: 'white', fontFamily: 'sans-serif' }}>
+        <div style={{ border: '4px solid #fbbf24', borderRadius: '50px', padding: '60px', position: 'relative', backgroundColor: 'rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column', gap: '40px' }}>
+          
           <div style={{ position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#0f172a', padding: '0 30px' }}>
             <BsStars size={80} color="#fbbf24" />
           </div>
-          <h2 style={{ textAlign: 'center', color: '#fbbf24', fontSize: '36px', letterSpacing: '8px', marginBottom: '80px', textTransform: 'uppercase', fontWeight: 'bold' }}>Ayat Hari Ini</h2>
-          <p style={{ textAlign: 'center', fontSize: '80px', lineHeight: '2.2', marginBottom: '60px', fontFamily: 'serif', direction: 'rtl' }}>{teksArab}</p>
-          <p style={{ textAlign: 'center', fontSize: '38px', color: '#cbd5e1', fontStyle: 'italic', marginBottom: '60px', lineHeight: '1.6' }}>&quot;{terjemahan}&quot;</p>
           
-          {/* TAFSIR AI MUNCUL DI POSTER */}
-          {tafsir && (
-            <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '50px', borderRadius: '30px', marginBottom: '60px', borderLeft: '10px solid #fbbf24' }}>
-              <h3 style={{ color: '#fbbf24', fontSize: '30px', marginBottom: '20px', fontWeight: 'bold' }}>
+          <h2 style={{ textAlign: 'center', color: '#fbbf24', fontSize: '32px', letterSpacing: '8px', textTransform: 'uppercase', fontWeight: 'bold', margin: '20px 0 0 0' }}>
+            Ayat Hari Ini
+          </h2>
+          
+          <p style={{ textAlign: 'center', fontSize: arabFontSize, lineHeight: arabLineHeight, margin: 0, fontFamily: 'serif', direction: 'rtl' }}>
+            {teksArab}
+          </p>
+          
+          <p style={{ textAlign: 'center', fontSize: terjemahanFontSize, color: '#cbd5e1', fontStyle: 'italic', margin: 0, lineHeight: '1.6' }}>
+            &quot;{terjemahanAman}&quot;
+          </p>
+          
+          {tafsirAman && (
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '40px', borderRadius: '30px', borderLeft: '10px solid #fbbf24', margin: 0 }}>
+              <h3 style={{ color: '#fbbf24', fontSize: '28px', marginBottom: '15px', marginTop: 0, fontWeight: 'bold' }}>
                 ✨ Hikmah Singkat:
               </h3>
-              <p style={{ fontSize: '28px', color: '#e2e8f0', lineHeight: '1.8' }}>
-                {tafsir.length > 350 ? tafsir.substring(0, 350) + '...' : tafsir}
+              <p style={{ fontSize: '24px', color: '#e2e8f0', lineHeight: '1.6', margin: 0 }}>
+                {tafsirAman}
               </p>
             </div>
           )}
 
-          <div style={{ marginTop: '100px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '2px solid #334155', paddingTop: '50px' }}>
-            <span style={{ fontSize: '32px', color: '#fbbf24', fontWeight: 'bold' }}>Q.S. {surahName} : {nomorAyat}</span>
-            <span style={{ fontSize: '24px', color: '#64748b' }}>quran-app-two-eta.vercel.app</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '2px solid #334155', paddingTop: '40px', marginTop: '10px' }}>
+            <span style={{ fontSize: '28px', color: '#fbbf24', fontWeight: 'bold' }}>Q.S. {surahName} : {nomorAyat}</span>
+            <span style={{ fontSize: '22px', color: '#64748b' }}>quran-app-two-eta.vercel.app</span>
           </div>
         </div>
       </div>

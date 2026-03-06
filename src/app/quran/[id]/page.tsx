@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import AyatCard from '@/components/AyatCard';
 import SettingsModal from '@/components/SettingsModal'; 
 import { updateDashboardStats } from '@/lib/stats'; 
-import { useAudio } from '@/context/AudioContext'; // <-- PANGGIL GLOBAL AUDIO DI SINI
+import { useAudio } from '@/context/AudioContext'; 
 import { 
   BiArrowBack, BiCog, BiBookReader, BiListUl, BiHide, 
   BiPlayCircle, BiPauseCircle 
@@ -30,9 +30,9 @@ export default function SuratDetailPage() {
 
   // --- PAKAI AUDIO GLOBAL ---
   const { playFullSurat, isPlaying, currentSurah } = useAudio();
-  // Cek apakah yang sedang main di Global Player adalah surat di halaman ini
   const isThisSuratPlaying = isPlaying && currentSurah === surat?.namaLatin;
 
+  // 1. Ambil Pengaturan Font/Mode dari LocalStorage
   useEffect(() => {
     const saved = localStorage.getItem('quran_reader_settings');
     if (saved) {
@@ -49,13 +49,14 @@ export default function SuratDetailPage() {
     localStorage.setItem('quran_reader_settings', JSON.stringify(newSettings));
   };
 
+  // 2. Fetch Data Surat dari API
   useEffect(() => {
     const fetchDetail = async () => {
       try {
         const res = await fetch(`https://equran.id/api/v2/surat/${id}`);
         const data = await res.json();
         setSurat(data.data);
-        updateDashboardStats('baca', data.data.jumlahAyat);
+        // PENCATATAN TARGET BACA DIHAPUS DARI SINI
       } catch {
         console.error("Gagal mengambil detail surat");
       } finally {
@@ -64,6 +65,27 @@ export default function SuratDetailPage() {
     };
     if (id) fetchDetail();
   }, [id]);
+
+  // ==========================================================
+  // 3. SENSOR WAKTU (TARGET BACA 10 DETIK)
+  // ==========================================================
+  useEffect(() => {
+    // Kalau surat belum dimuat, jangan hitung waktu
+    if (!surat) return;
+
+    // Pasang timer 10 detik (10.000 milidetik)
+    const timer = setTimeout(() => {
+      updateDashboardStats('baca', surat.jumlahAyat);
+      console.log(`Sah! Surat ${surat.namaLatin} dibaca lebih dari 10 detik. Target ditambahkan.`);
+    }, 10000);
+
+    // CLEANUP: Kalau user menekan tombol 'Back' sebelum 10 detik, timer dibatalkan!
+    return () => {
+      clearTimeout(timer);
+      console.log("Membaca dibatalkan. Belum 10 detik sudah keluar.");
+    };
+  }, [surat]); // Efek ini akan berjalan setelah 'surat' berhasil dimuat
+
 
   if (isLoading) return <div className="flex justify-center items-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-islamic-700"></div></div>;
   if (!surat) return <div className="p-6 text-center">Surat tidak ditemukan.</div>;

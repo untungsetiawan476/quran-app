@@ -15,7 +15,6 @@ interface AyatProps {
   teksLatin: string;
   terjemahan: string;
   audioUrl: string;
-  // Props baru untuk Pengaturan Bacaan
   fontSize: number;
   fontFamily: string;
   showPosterBtn: boolean;
@@ -29,7 +28,6 @@ export default function AyatCard({
   const [loading, setLoading] = useState(false);
   const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
   
-  // State Audio & Belajar
   const [isPlaying, setIsPlaying] = useState(false);
   const [showFocusMenu, setShowFocusMenu] = useState(false);
   const [loopLimit, setLoopLimit] = useState(1);
@@ -37,7 +35,6 @@ export default function AyatCard({
   const [isQuizMode, setIsQuizMode] = useState(false);
   const [hiddenWords, setHiddenWords] = useState<number[]>([]);
 
-  // State Playlist (Koleksi)
   const [showPlaylistMenu, setShowPlaylistMenu] = useState(false);
   const [playlists, setPlaylists] = useState<string[]>([]);
   const [newPlaylistName, setNewPlaylistName] = useState('');
@@ -64,7 +61,6 @@ export default function AyatCard({
     };
   }, [audioUrl]);
 
-  // Logika Audio
   const togglePlay = () => {
     if (isPlaying) {
       audioRef.current?.pause();
@@ -96,7 +92,6 @@ export default function AyatCard({
     };
   };
 
-  // Logika Kuis Blanko
   const toggleQuizMode = () => {
     if (!isQuizMode) {
       const words = teksArab.split(' ');
@@ -189,7 +184,6 @@ export default function AyatCard({
         
         <div className="flex flex-col items-end space-y-2 relative">
           <div className="flex space-x-3 items-center">
-            {/* Tombol Poster Kondisional */}
             {showPosterBtn && (
               <button onClick={downloadPoster} disabled={isGeneratingPoster} className={`transition p-2 rounded-full text-gray-400 hover:text-islamic-500 hover:bg-islamic-50 dark:hover:bg-gray-700`} title="Jadikan Poster">
                 {isGeneratingPoster ? <span className="flex h-5 w-5 relative"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-islamic-400 opacity-75"></span><span className="relative inline-flex rounded-full h-5 w-5 bg-islamic-500"></span></span> : <BiImageAdd size={24} />}
@@ -214,7 +208,6 @@ export default function AyatCard({
             </button>
           </div>
 
-          {/* MENU PLAYLIST */}
           {showPlaylistMenu && (
             <div className="absolute top-12 right-0 z-20 bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xl w-64 animate-fade-in-down">
               <h4 className="text-[10px] font-bold text-gray-400 mb-3 uppercase tracking-widest">Simpan ke Koleksi</h4>
@@ -254,7 +247,6 @@ export default function AyatCard({
             </div>
           )}
 
-          {/* MENU BELAJAR */}
           {showFocusMenu && (
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 flex flex-col gap-4 text-sm animate-fade-in-down w-full max-w-xs justify-end shadow-xl mt-2 z-20">
               <div className="grid grid-cols-2 gap-3">
@@ -285,7 +277,6 @@ export default function AyatCard({
         </div>
       </div>
       
-      {/* TAMPILAN TEKS ARAB (Dinamis sesuai Settings) */}
       <div 
         className={`${fontFamily} leading-[2.2] text-right mb-6 text-gray-800 dark:text-gray-100 transition-all duration-300`} 
         dir="rtl"
@@ -307,7 +298,6 @@ export default function AyatCard({
       <p className="text-sm text-islamic-600 dark:text-gold-400 font-medium italic mb-3 tracking-wide">{teksLatin}</p>
       <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed">{terjemahan}</p>
 
-      {/* Tafsir AI Box */}
       {tafsir && (
         <div className="mt-6 p-6 bg-linear-to-br from-islamic-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-3xl border border-islamic-100 dark:border-gray-600 shadow-inner">
           <h4 className="flex items-center text-xs font-black text-islamic-700 dark:text-gold-400 mb-4 uppercase tracking-[0.2em]"><BsStars className="mr-2" size={18} /> Hikmah & Tafsir AI</h4>
@@ -315,7 +305,7 @@ export default function AyatCard({
         </div>
       )}
 
-      {/* KANVAS POSTER RAHASIA */}
+      {/* KANVAS POSTER RAHASIA DENGAN TAFSIR AI */}
       <div id={`poster-${nomorAyat}`} style={{ display: 'none', width: '1080px', padding: '80px', backgroundColor: '#0f172a', color: 'white', fontFamily: 'sans-serif' }}>
         <div style={{ border: '4px solid #fbbf24', borderRadius: '50px', padding: '80px', position: 'relative', backgroundColor: 'rgba(255,255,255,0.02)' }}>
           <div style={{ position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#0f172a', padding: '0 30px' }}>
@@ -324,12 +314,26 @@ export default function AyatCard({
           <h2 style={{ textAlign: 'center', color: '#fbbf24', fontSize: '36px', letterSpacing: '8px', marginBottom: '80px', textTransform: 'uppercase', fontWeight: 'bold' }}>Ayat Hari Ini</h2>
           <p style={{ textAlign: 'center', fontSize: '80px', lineHeight: '2.2', marginBottom: '60px', fontFamily: 'serif', direction: 'rtl' }}>{teksArab}</p>
           <p style={{ textAlign: 'center', fontSize: '38px', color: '#cbd5e1', fontStyle: 'italic', marginBottom: '60px', lineHeight: '1.6' }}>&quot;{terjemahan}&quot;</p>
+          
+          {/* TAFSIR AI MUNCUL DI POSTER */}
+          {tafsir && (
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '50px', borderRadius: '30px', marginBottom: '60px', borderLeft: '10px solid #fbbf24' }}>
+              <h3 style={{ color: '#fbbf24', fontSize: '30px', marginBottom: '20px', fontWeight: 'bold' }}>
+                ✨ Hikmah Singkat:
+              </h3>
+              <p style={{ fontSize: '28px', color: '#e2e8f0', lineHeight: '1.8' }}>
+                {tafsir.length > 350 ? tafsir.substring(0, 350) + '...' : tafsir}
+              </p>
+            </div>
+          )}
+
           <div style={{ marginTop: '100px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '2px solid #334155', paddingTop: '50px' }}>
             <span style={{ fontSize: '32px', color: '#fbbf24', fontWeight: 'bold' }}>Q.S. {surahName} : {nomorAyat}</span>
             <span style={{ fontSize: '24px', color: '#64748b' }}>quran-app-two-eta.vercel.app</span>
           </div>
         </div>
       </div>
+
     </div>
   );
 }

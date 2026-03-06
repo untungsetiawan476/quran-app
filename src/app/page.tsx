@@ -1,4 +1,5 @@
 "use client";
+import { BsStars } from 'react-icons/bs';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { 
@@ -129,6 +130,41 @@ export default function Home() {
               <BiCalendarEvent size={28} />
             </div>
             <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Jadwal</span>
+          </Link>
+        </div>
+
+        {/* ========================================== */}
+        {/* BANNER VIP: ASISTEN USTADZ AI (CHATBOT)    */}
+        {/* ========================================== */}
+        <div className="relative group cursor-pointer animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+          {/* Efek Cahaya Menyala di Belakang Banner */}
+          <div className="absolute -inset-1 bg-linear-to-r from-emerald-500 to-gold-400 rounded-4xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
+          
+          <Link href="/konsultasi" className="relative bg-linear-to-br from-emerald-600 to-teal-800 rounded-3xl p-5 flex items-center justify-between shadow-xl overflow-hidden border border-emerald-500/30">
+            {/* Dekorasi Background Abstrak */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gold-500/20 rounded-full blur-xl translate-y-1/3 -translate-x-1/4"></div>
+            
+            <div className="flex items-center space-x-4 relative z-10">
+              <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-inner border border-white/30 shrink-0">
+                <BsStars size={30} className="text-gold-300 animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-lg mb-0.5 flex items-center">
+                  Asisten Ustadz 
+                  <span className="ml-2 px-2 py-0.5 bg-gold-500 text-white text-[9px] rounded-full uppercase tracking-wider font-black shadow-sm">
+                    AI
+                  </span>
+                </h3>
+                <p className="text-emerald-100 text-xs leading-relaxed max-w-50">
+                  Ada keraguan? Curhat & tanya jawab hukum Islam di sini.
+                </p>
+              </div>
+            </div>
+            
+            <div className="w-10 h-10 bg-white text-emerald-600 rounded-full flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 active:scale-95 transition-transform relative z-10">
+              <BiRightArrowAlt size={24} />
+            </div>
           </Link>
         </div>
 

@@ -192,14 +192,13 @@ export default function StudioKontenPage() {
       )}
 
       {/* ======================================================== */}
-      {/* KANVAS POSTER RAHASIA (DIJAMIN TIDAK NUMPUK KARENA FLEX & GAP) */}
+      {/* KANVAS POSTER RAHASIA DENGAN SAFE ZONE YOUTUBE SHORTS    */}
       {/* ======================================================== */}
       {data && (
         <div 
           id="poster-studio" 
           style={{ 
             display: 'none', 
-            flexDirection: 'column',
             justifyContent: 'center', 
             alignItems: 'center',
             width: '1080px', 
@@ -207,47 +206,71 @@ export default function StudioKontenPage() {
             backgroundColor: '#0f172a', 
             color: 'white', 
             fontFamily: 'sans-serif',
-            padding: '120px 80px', 
+            // SAFE ZONE: Ruang kosong raksasa di pinggir agar kebal dari Zoom YouTube
+            padding: '160px 100px', 
             boxSizing: 'border-box',
-            gap: '60px', 
             position: 'relative'
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-             <BsStars size={60} color="#fbbf24" />
-             <span style={{ fontSize: '30px', color: '#fbbf24', letterSpacing: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}>
-               Pesan Hari Ini
-             </span>
-          </div>
-
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '50px' }}>
-            <p style={{ textAlign: 'center', fontSize: data.arab.length > 100 ? '60px' : '85px', lineHeight: '1.8', margin: 0, fontFamily: 'serif', direction: 'rtl' }}>
-              {data.arab}
-            </p>
+          {/* KOTAK KUNING UTAMA (Area Aman Konten) */}
+          <div style={{
+            width: '100%',
+            height: '100%',
+            border: '6px solid #fbbf24', // Ini dia bingkai kuningnya!
+            borderRadius: '60px',
+            display: 'flex', 
+            flexDirection: 'column',
+            justifyContent: 'center', 
+            alignItems: 'center',
+            padding: '80px 60px', // Jarak dari garis kuning ke teks
+            boxSizing: 'border-box',
+            gap: '50px', 
+            position: 'relative',
+            backgroundColor: 'rgba(255,255,255,0.02)'
+          }}>
             
-            <p style={{ textAlign: 'center', fontSize: '36px', color: '#cbd5e1', fontStyle: 'italic', margin: 0, lineHeight: '1.6', maxWidth: '900px' }}>
-              &quot;{data.terjemahan}&quot;
-            </p>
-            
-            <span style={{ fontSize: '28px', color: '#94a3b8', fontWeight: 'bold' }}>
-              — Q.S. {data.surah} : {data.ayat} —
-            </span>
-          </div>
-
-          <div style={{ width: '100%', backgroundColor: 'rgba(255,255,255,0.05)', padding: '50px', borderRadius: '40px', borderLeft: '12px solid #fbbf24', boxSizing: 'border-box' }}>
-            <h3 style={{ color: '#fbbf24', fontSize: '34px', margin: '0 0 20px 0', display: 'flex', alignItems: 'center' }}>
-               ✨ Hikmah Singkat
-            </h3>
-            <p style={{ fontSize: '32px', color: '#e2e8f0', lineHeight: '1.6', margin: 0 }}>
-              {data.hikmah}
-            </p>
-          </div>
-
-          <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
-            <span style={{ color: '#fbbf24', fontSize: '28px', letterSpacing: '3px' }}>BACA TAFSIR LENGKAPNYA DI</span>
-            <div style={{ border: '2px solid #fbbf24', padding: '15px 40px', borderRadius: '50px' }}>
-              <span style={{ fontSize: '30px', fontWeight: 'bold', color: 'white' }}>quran-app-two-eta.vercel.app</span>
+            {/* Ornamen Bintang di Atas Garis */}
+            <div style={{ position: 'absolute', top: '-45px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#0f172a', padding: '0 40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+               <BsStars size={80} color="#fbbf24" />
             </div>
+            
+            <span style={{ fontSize: '32px', color: '#fbbf24', letterSpacing: '10px', fontWeight: 'bold', textTransform: 'uppercase', marginTop: '30px', textAlign: 'center' }}>
+              Pesan Hari Ini
+            </span>
+
+            {/* Kotak Utama Arab & Terjemahan */}
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '40px' }}>
+              <p style={{ textAlign: 'center', fontSize: data.arab.length > 100 ? '55px' : '75px', lineHeight: '1.9', margin: 0, fontFamily: 'serif', direction: 'rtl' }}>
+                {data.arab}
+              </p>
+              
+              <p style={{ textAlign: 'center', fontSize: '32px', color: '#cbd5e1', fontStyle: 'italic', margin: 0, lineHeight: '1.6' }}>
+                &quot;{data.terjemahan}&quot;
+              </p>
+              
+              <span style={{ fontSize: '26px', color: '#94a3b8', fontWeight: 'bold' }}>
+                — Q.S. {data.surah} : {data.ayat} —
+              </span>
+            </div>
+
+            {/* Kotak Hikmah */}
+            <div style={{ width: '100%', backgroundColor: 'rgba(255,255,255,0.05)', padding: '40px', borderRadius: '40px', borderLeft: '12px solid #fbbf24', boxSizing: 'border-box' }}>
+              <h3 style={{ color: '#fbbf24', fontSize: '30px', margin: '0 0 15px 0', display: 'flex', alignItems: 'center' }}>
+                 ✨ Hikmah Singkat
+              </h3>
+              <p style={{ fontSize: '28px', color: '#e2e8f0', lineHeight: '1.6', margin: 0 }}>
+                {data.hikmah}
+              </p>
+            </div>
+
+            {/* Watermark Bawah */}
+            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+              <span style={{ color: '#fbbf24', fontSize: '24px', letterSpacing: '3px' }}>BACA TAFSIR LENGKAPNYA DI</span>
+              <div style={{ border: '2px solid #fbbf24', padding: '15px 40px', borderRadius: '50px' }}>
+                <span style={{ fontSize: '26px', fontWeight: 'bold', color: 'white' }}>quran-app-two-eta.vercel.app</span>
+              </div>
+            </div>
+
           </div>
         </div>
       )}

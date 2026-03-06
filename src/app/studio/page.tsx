@@ -33,15 +33,21 @@ export default function StudioKontenPage() {
     setLoading(true);
     setData(null);
     try {
+      // PERBAIKAN PROMPT: Memaksa AI untuk mematuhi batas 100 karakter untuk Shorts
       const prompt = `Pilihkan SATU potong ayat Al-Qur'an secara acak (jangan yang itu-itu saja) yang sangat relevan dengan tema: "${tema}". 
       Ayatnya jangan terlalu panjang (maksimal 20 kata Arab).
       Balas HANYA dengan format JSON murni tanpa tambahan apapun (tanpa markdown/backtick): 
-      {"surah": "Nama Surah", "ayat": "Nomor Ayat", "arab": "Teks Arab", "terjemahan": "Terjemahan Bahasa Indonesia", "hikmah": "1 kalimat singkat padat yang memotivasi untuk di poster", "caption": "Tuliskan 1 paragraf caption TikTok/IG yang menyentuh hati, gaya bahasa santai namun sopan, diakhiri dengan 5 hashtag viral."}`;
+      {"surah": "Nama Surah", "ayat": "Nomor Ayat", "arab": "Teks Arab", "terjemahan": "Terjemahan Bahasa Indonesia", "hikmah": "1 kalimat motivasi singkat untuk di poster", "caption": "Caption YouTube Shorts SANGAT SINGKAT. MAKSIMAL TOTAL 90 KARAKTER (Wajib hitung hurufnya, sudah termasuk 2 hashtag pendek). Contoh: Hati tenang dengan Al-Qur'an ✨ #ngaji #quran"}`;
       
       const response = await callGeminiAPI(prompt);
       const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsedData = JSON.parse(cleanedResponse);
       
+      // Keamanan ganda: Jika AI masih bandel ngeyel lebih dari 100 karakter, kita potong paksa kodenya
+      if (parsedData.caption && parsedData.caption.length > 100) {
+        parsedData.caption = parsedData.caption.substring(0, 97) + "...";
+      }
+
       setData(parsedData);
     } catch (error) {
       console.error("Gagal buat konten:", error);
@@ -65,12 +71,11 @@ export default function StudioKontenPage() {
       const element = document.getElementById('poster-studio');
       
       if (element) {
-        // Tampilkan sebagai Flexbox agar tidak numpuk
         element.style.display = 'flex';
         const canvas = await html2canvas(element, { 
           scale: 2, 
           useCORS: true,
-          backgroundColor: '#0f172a' // Biru Dongker Gelap ala Premium
+          backgroundColor: '#0f172a' 
         });
         element.style.display = 'none';
 
@@ -81,6 +86,8 @@ export default function StudioKontenPage() {
         link.click();
       }
     } catch (error) {
+      // PERBAIKAN: Variabel error sekarang kita pakai untuk dicatat di Console
+      console.error("Gagal membuat poster:", error);
       alert("Maaf, gagal mengekspor poster.");
     }
     setIsGeneratingPoster(false);
@@ -90,7 +97,7 @@ export default function StudioKontenPage() {
     <div className="p-4 pt-8 pb-24 min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2 flex items-center">
-          <BiVideoPlus className="mr-2 text-islamic-600" size={32} /> Studio Konten AI
+          <BiVideoPlus className="mr-2 text-indigo-600 dark:text-gold-400" size={32} /> Studio Konten AI
         </h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm">Mesin pembuat konten dakwah otomatis untuk TikTok, Reels & Shorts.</p>
       </div>
@@ -105,10 +112,11 @@ export default function StudioKontenPage() {
             <button
               key={t}
               onClick={() => setTema(t)}
+              // PERBAIKAN WARNA TOMBOL: Dijamin kelihatan dan kontras!
               className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
                 tema === t 
-                  ? 'bg-islamic-600 text-white shadow-md scale-105' 
-                  : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-islamic-100'
+                  ? 'bg-slate-800 text-white dark:bg-gold-500 dark:text-slate-900 shadow-md scale-105' 
+                  : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               {t}
@@ -119,7 +127,7 @@ export default function StudioKontenPage() {
         <button 
           onClick={handleGenerate}
           disabled={loading}
-          className="w-full bg-gold-500 hover:bg-gold-400 text-islamic-900 font-bold py-4 rounded-2xl transition-all shadow-lg flex justify-center items-center text-lg"
+          className="w-full bg-gold-500 hover:bg-gold-400 text-slate-900 font-bold py-4 rounded-2xl transition-all shadow-lg flex justify-center items-center text-lg"
         >
           {loading ? (
             <span className="flex items-center animate-pulse"><BsStars className="mr-2 animate-spin" size={24} /> AI Sedang Meracik Konten...</span>
@@ -135,13 +143,13 @@ export default function StudioKontenPage() {
           {/* Hasil Poster Preview */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-islamic-700 dark:text-gold-400 flex items-center">
+              <h3 className="font-bold text-indigo-700 dark:text-gold-400 flex items-center">
                 🖼️ Preview Poster (9:16)
               </h3>
               <button 
                 onClick={downloadTikTokPoster} 
                 disabled={isGeneratingPoster} 
-                className="bg-islamic-600 hover:bg-islamic-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center transition shadow-sm"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center transition shadow-sm"
               >
                 {isGeneratingPoster ? 'Memproses...' : <><BiImageAdd size={20} className="mr-2" /> Download HD</>}
               </button>
@@ -174,8 +182,11 @@ export default function StudioKontenPage() {
             <textarea 
               readOnly 
               value={data.caption} 
-              className="w-full h-40 p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl text-sm text-gray-700 dark:text-gray-300 focus:outline-none resize-none"
+              className="w-full h-24 p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl text-sm text-gray-700 dark:text-gray-300 focus:outline-none resize-none"
             />
+            <p className="text-xs text-right mt-2 text-gray-500">
+              {data.caption.length}/100 Karakter (Pas untuk Shorts)
+            </p>
           </div>
         </div>
       )}
@@ -189,7 +200,7 @@ export default function StudioKontenPage() {
           style={{ 
             display: 'none', 
             flexDirection: 'column',
-            justifyContent: 'center', // Selalu ke tengah
+            justifyContent: 'center', 
             alignItems: 'center',
             width: '1080px', 
             height: '1920px', 
@@ -198,11 +209,10 @@ export default function StudioKontenPage() {
             fontFamily: 'sans-serif',
             padding: '120px 80px', 
             boxSizing: 'border-box',
-            gap: '60px', // INI KUNCI ANTI NUMPUK! Jarak antar elemen dipaksa 60px
+            gap: '60px', 
             position: 'relative'
           }}
         >
-          {/* Ornamen Atas */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
              <BsStars size={60} color="#fbbf24" />
              <span style={{ fontSize: '30px', color: '#fbbf24', letterSpacing: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}>
@@ -210,7 +220,6 @@ export default function StudioKontenPage() {
              </span>
           </div>
 
-          {/* Kotak Utama Arab & Terjemahan */}
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '50px' }}>
             <p style={{ textAlign: 'center', fontSize: data.arab.length > 100 ? '60px' : '85px', lineHeight: '1.8', margin: 0, fontFamily: 'serif', direction: 'rtl' }}>
               {data.arab}
@@ -225,7 +234,6 @@ export default function StudioKontenPage() {
             </span>
           </div>
 
-          {/* Kotak Hikmah (Akan otomatis menyesuaikan isi tanpa menabrak) */}
           <div style={{ width: '100%', backgroundColor: 'rgba(255,255,255,0.05)', padding: '50px', borderRadius: '40px', borderLeft: '12px solid #fbbf24', boxSizing: 'border-box' }}>
             <h3 style={{ color: '#fbbf24', fontSize: '34px', margin: '0 0 20px 0', display: 'flex', alignItems: 'center' }}>
                ✨ Hikmah Singkat
@@ -235,7 +243,6 @@ export default function StudioKontenPage() {
             </p>
           </div>
 
-          {/* Watermark Bawah (Akan selalu di bawah kotak hikmah, berkat gap) */}
           <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
             <span style={{ color: '#fbbf24', fontSize: '28px', letterSpacing: '3px' }}>BACA TAFSIR LENGKAPNYA DI</span>
             <div style={{ border: '2px solid #fbbf24', padding: '15px 40px', borderRadius: '50px' }}>

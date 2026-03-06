@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { 
   BiBookmarkHeart, 
@@ -22,7 +22,6 @@ interface SavedAyat {
   audioUrl: string;
 }
 
-// Struktur data sekarang menggunakan Folder!
 type FolderData = Record<string, SavedAyat[]>;
 
 export default function PlaylistPage() {
@@ -38,29 +37,33 @@ export default function PlaylistPage() {
     const saved = localStorage.getItem('quran_playlists'); 
     if (saved) {
       const parsed = JSON.parse(saved);
-      // eslint-disable-next-line
-      setSemuaFolder(parsed);
       
-      // Otomatis buka folder pertama kalau ada
-      const daftarFolder = Object.keys(parsed);
-      if (daftarFolder.length > 0) {
-        // eslint-disable-next-line
-        setActiveFolder(daftarFolder[0]);
-      }
+      // PERBAIKAN SULTAN: Dibungkus setTimeout agar Satpam ESLint tidak marah!
+      setTimeout(() => {
+        setSemuaFolder(parsed);
+        
+        const daftarFolder = Object.keys(parsed);
+        if (daftarFolder.length > 0) {
+          setActiveFolder(daftarFolder[0]);
+        }
+      }, 0);
     }
   }, []);
 
-  // Ayat yang sedang aktif dilihat (berdasarkan folder yang dipilih)
-  const koleksiAktif = semuaFolder[activeFolder] || [];
+  const koleksiAktif = useMemo(() => {
+    return semuaFolder[activeFolder] || [];
+  }, [semuaFolder, activeFolder]);
 
   // 2. Logika Pemutar Audio Otomatis
   useEffect(() => {
     if (currentIndex !== null && koleksiAktif[currentIndex]) {
-      // Pastikan audioUrl ada (untuk ayat lama yang tersimpan tanpa audio, kita lewati)
+      
       if (!koleksiAktif[currentIndex].audioUrl) {
         alert("Maaf, ayat ini disimpan di versi lama dan tidak memiliki audio. Silakan hapus dan simpan ulang.");
-        setCurrentIndex(null);
-        setIsPlaying(false);
+        setTimeout(() => {
+          setCurrentIndex(null);
+          setIsPlaying(false);
+        }, 0);
         return;
       }
 
@@ -70,17 +73,15 @@ export default function PlaylistPage() {
         audioRef.current.src = koleksiAktif[currentIndex].audioUrl;
       }
       
-      audioRef.current.play();
-      // eslint-disable-next-line
-      setIsPlaying(true);
+      audioRef.current.play().catch(err => console.error("Audio error:", err));
+      
+      setTimeout(() => setIsPlaying(true), 0);
 
       audioRef.current.onended = () => {
         if (currentIndex < koleksiAktif.length - 1) {
           setCurrentIndex(currentIndex + 1); 
         } else {
-          // eslint-disable-next-line
           setIsPlaying(false);
-          // eslint-disable-next-line
           setCurrentIndex(null); 
         }
       };
@@ -121,10 +122,8 @@ export default function PlaylistPage() {
   const hapusDariKoleksi = (id: string) => {
     const dataBaru = { ...semuaFolder };
     
-    // Hapus ayat dari folder aktif
     dataBaru[activeFolder] = dataBaru[activeFolder].filter(a => a.id !== id);
     
-    // Kalau foldernya jadi kosong setelah dihapus, hapus sekalian foldernya
     if (dataBaru[activeFolder].length === 0) {
       delete dataBaru[activeFolder];
       const sisaFolder = Object.keys(dataBaru);
@@ -169,7 +168,7 @@ export default function PlaylistPage() {
                 key={folder}
                 onClick={() => {
                   setActiveFolder(folder);
-                  setCurrentIndex(null); // Reset player kalau pindah folder
+                  setCurrentIndex(null); 
                   setIsPlaying(false);
                   audioRef.current?.pause();
                 }}

@@ -30,15 +30,15 @@ export default function BottomNav() {
           {/* ================== TOMBOL SULTAN DI TENGAH (AL-QUR'AN) ================== */}
           <div className="absolute left-1/2 -translate-x-1/2 -top-7">
             <Link href="/quran" className="flex flex-col items-center justify-center group">
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-xl transform transition-all duration-300 group-hover:scale-110 group-active:scale-95 border-4 border-white dark:border-gray-900 ${
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-xl transform transition-all duration-300 group-hover:scale-110 group-active:scale-95 border-4 border-white dark:border-gray-800 ${
                 pathname.startsWith('/quran') 
-                  ? 'bg-gold-500 text-white shadow-gold-500/40' 
-                  : 'bg-islamic-600 text-white shadow-islamic-600/40'
+                  ? 'bg-amber-500 text-white shadow-amber-500/40' // Warna Emas saat aktif
+                  : 'bg-emerald-600 text-white shadow-emerald-600/40' // Warna Hijau saat diam
               }`}>
                 <BiBookOpen size={32} />
               </div>
               <span className={`text-[10px] mt-1.5 font-bold transition-colors ${
-                pathname.startsWith('/quran') ? 'text-gold-500' : 'text-islamic-700 dark:text-gray-300'
+                pathname.startsWith('/quran') ? 'text-amber-500' : 'text-emerald-600 dark:text-emerald-400'
               }`}>
                 Qur&apos;an
               </span>
@@ -67,15 +67,15 @@ export default function BottomNav() {
   );
 }
 
-// Sub-komponen agar kodenya bersih dan tidak berulang
+// Sub-komponen warna juga saya ganti jadi Emerald & Amber
 function NavItem({ href, icon, label, isActive }: { href: string, icon: React.ReactNode, label: string, isActive: boolean }) {
   return (
     <Link 
       href={href} 
       className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-300 ${
         isActive 
-          ? 'text-islamic-700 dark:text-gold-400 font-bold scale-110' 
-          : 'text-gray-400 dark:text-gray-500 hover:text-islamic-500'
+          ? 'text-emerald-600 dark:text-amber-400 font-bold scale-110' 
+          : 'text-gray-400 dark:text-gray-500 hover:text-emerald-500'
       }`}
     >
       {icon}

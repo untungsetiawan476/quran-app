@@ -22,18 +22,14 @@ export default function DoaPage() {
     if (!curhat.trim()) return;
     setLoading(true);
     try {
-      // Kita PAKSA AI untuk membalas dengan format JSON yang terstruktur
       const prompt = `Saya sedang merasa: "${curhat}". Berikan saya nasihat Islami yang sangat menenangkan hati, beserta satu rekomendasi doa pendek (maksimal 20 kata) yang relevan dengan kondisi saya. Balas HANYA dengan format JSON persis seperti ini tanpa tambahan teks/markdown apapun: {"nasihat": "1-2 paragraf nasihat penuh empati", "arab": "Teks Arab Doa", "latin": "Teks Latin", "arti": "Terjemahan", "sumber": "Sumber doa (misal: Q.S. Al-Baqarah: 286 atau HR. Bukhari)"}`;
       
       const response = await callGeminiAPI(prompt);
-      
-      // Membersihkan format backtick markdown jika AI menambahkannya
       const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsedData = JSON.parse(cleanedResponse);
       
       setData(parsedData);
     } catch { 
-      // Fallback jika AI sedang sibuk atau gagal parsing JSON
       setData({
         nasihat: "Koneksi AI sedang sibuk. Tarik napas, tenangkan diri, dan bacalah doa ini agar hatimu lapang.",
         arab: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي",
@@ -45,7 +41,6 @@ export default function DoaPage() {
     setLoading(false);
   };
 
-  // --- LOGIKA PEMBUATAN POSTER TIKTOK/REELS ---
   const downloadTikTokPoster = async () => {
     setIsGeneratingPoster(true);
     try {
@@ -57,7 +52,7 @@ export default function DoaPage() {
         const canvas = await html2canvas(element, { 
           scale: 2, 
           useCORS: true,
-          backgroundColor: '#2e1065' // Warna dasar ungu sangat gelap (Deep Purple)
+          backgroundColor: '#2e1065' 
         });
         element.style.display = 'none';
 
@@ -81,7 +76,6 @@ export default function DoaPage() {
         <p className="text-gray-500 dark:text-gray-400 text-sm">Temukan ketenangan dan doa yang tepat untuk setiap keluh kesahmu.</p>
       </div>
       
-      {/* KARTU INPUT CURHAT */}
       <div className="bg-linear-to-br from-purple-500 to-indigo-600 rounded-3xl p-6 shadow-xl mb-8 text-white relative overflow-hidden border border-purple-400/50">
         <div className="absolute -right-4 -bottom-4 opacity-10">
            <BiMessageRoundedDots size={120} />
@@ -116,7 +110,6 @@ export default function DoaPage() {
         </div>
       </div>
 
-      {/* HASIL NASIHAT & DOA */}
       {data && (
         <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 relative overflow-hidden group">
           <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
@@ -124,7 +117,6 @@ export default function DoaPage() {
               <BiBookHeart className="mr-2" size={20} /> Jawaban Untukmu
             </h3>
             
-            {/* Tombol Download Poster */}
             <button 
               onClick={downloadTikTokPoster} 
               disabled={isGeneratingPoster} 
@@ -140,12 +132,10 @@ export default function DoaPage() {
           </div>
 
           <div className="space-y-6">
-            {/* Bagian Nasihat */}
             <div className="bg-purple-50 dark:bg-gray-700/50 p-4 rounded-2xl text-sm text-gray-700 dark:text-gray-300 leading-relaxed border-l-4 border-purple-400">
                {data.nasihat}
             </div>
 
-            {/* Bagian Doa */}
             <div className="text-center pt-2">
               <span className="inline-block bg-gold-100 dark:bg-gray-700 text-gold-600 dark:text-gold-400 text-[10px] font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-widest">
                 Rekomendasi Doa
@@ -160,7 +150,7 @@ export default function DoaPage() {
       )}
 
       {/* ======================================================== */}
-      {/* KANVAS POSTER TIKTOK / REELS (RASIO 9:16 - 1080x1920) */}
+      {/* KANVAS POSTER TIKTOK / REELS (DIPERBAIKI ANTI NUMPUK)    */}
       {/* ======================================================== */}
       {data && (
         <div 
@@ -168,21 +158,25 @@ export default function DoaPage() {
           style={{ 
             display: 'none', 
             flexDirection: 'column',
-            justifyContent: 'center',
+            justifyContent: 'space-between', // Otomatis merenggang atas-bawah
+            alignItems: 'center',
             width: '1080px', 
             height: '1920px', 
-            backgroundColor: '#2e1065', // Dark Purple
+            backgroundColor: '#2e1065', 
             color: 'white', 
             fontFamily: 'sans-serif',
-            padding: '100px',
+            padding: '120px 100px', // Padding lebih proporsional
             boxSizing: 'border-box',
             position: 'relative'
           }}
         >
           {/* Ornamen Latar */}
-          <div style={{ position: 'absolute', top: '5%', right: '5%', opacity: '0.05' }}><BiMessageRoundedDots size={400} color="#fbbf24" /></div>
+          <div style={{ position: 'absolute', top: '5%', right: '5%', opacity: '0.05' }}>
+            <BiMessageRoundedDots size={400} color="#fbbf24" />
+          </div>
           
-          <div style={{ zIndex: 10, border: '4px solid rgba(168, 85, 247, 0.4)', borderRadius: '60px', padding: '80px', backgroundColor: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(10px)' }}>
+          {/* KOTAK KONTEN TENGAH */}
+          <div style={{ width: '100%', zIndex: 10, border: '4px solid rgba(168, 85, 247, 0.4)', borderRadius: '60px', padding: '80px', backgroundColor: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(10px)' }}>
             
             {/* Nasihat Section */}
             <div style={{ marginBottom: '60px', borderBottom: '2px dashed rgba(255,255,255,0.2)', paddingBottom: '50px' }}>
@@ -214,18 +208,18 @@ export default function DoaPage() {
             </div>
           </div>
 
-          {/* WATERMARK PROMOSI TIKTOK DI BAWAH (Fixed) */}
-        <div style={{ position: 'absolute', bottom: '100px', left: '0', right: '0', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10 }}>
-          <p style={{ color: '#fbbf24', fontSize: '36px', fontWeight: 'bold', margin: '0 0 15px 0', letterSpacing: '2px', textAlign: 'center' }}>
-            TEMUKAN DOA UNTUK MASALAHMU
-          </p>
-          {/* Kotak Putih dengan Border Emas Premium */}
-          <div style={{ backgroundColor: 'white', padding: '20px 50px', borderRadius: '50px', border: '4px solid #fbbf24', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
-            <span style={{ color: '#2e1065', fontSize: '34px', fontWeight: 'bold' }}>
-              quran-app-two-eta.vercel.app
-            </span>
+          {/* WATERMARK PROMOSI TIKTOK DI BAWAH */}
+          {/* Karena pakai flex space-between, dia otomatis ke dorong ke bawah dengan aman */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10, marginTop: '40px' }}>
+            <p style={{ color: '#fbbf24', fontSize: '36px', fontWeight: 'bold', margin: '0 0 15px 0', letterSpacing: '2px', textAlign: 'center' }}>
+              TEMUKAN DOA UNTUK MASALAHMU
+            </p>
+            <div style={{ backgroundColor: 'white', padding: '20px 50px', borderRadius: '50px', border: '4px solid #fbbf24', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+              <span style={{ color: '#2e1065', fontSize: '34px', fontWeight: 'bold' }}>
+                quran-app-two-eta.vercel.app
+              </span>
+            </div>
           </div>
-        </div>
         </div>
       )}
     </div>

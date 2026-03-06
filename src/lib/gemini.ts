@@ -9,21 +9,24 @@ export const callGeminiAPI = async (prompt: string, retries = 3): Promise<string
 
   const genAI = new GoogleGenerativeAI(apiKey);
   
-  // PERBAIKAN: Menggunakan nama model paling aman yang pasti dikenali oleh semua sistem Google
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  // KITA KEMBALI KE MODEL TERBARU karena versi lama sudah dihapus Google (404)
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   try {
-    console.log("Mencoba memanggil model: gemini-pro...");
+    console.log("Mencoba memanggil model: gemini-2.5-flash...");
     const result = await model.generateContent(prompt);
     const text = result.response.text();
     return text;
   } catch (error: unknown) {
     const err = error as { status?: number; message?: string };
     
-    // Auto-Retry kalau kena limit (429)
+    // JIKA KENA ERROR 429 (TOO MANY REQUESTS)
     if (err?.status === 429 && retries > 0) {
-      console.warn(`Gemini API kena blokir sementara (429). Menunggu 3 detik... (Sisa percobaan: ${retries - 1})`);
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Google kadang minta tunggu sampai 30 detik. 
+      // Kita set jeda waktu 15 detik per antrean agar lebih aman.
+      console.warn(`Gemini API kena limit (429). Sistem sedang pending 15 detik... (Sisa percobaan: ${retries - 1})`);
+      
+      await new Promise(resolve => setTimeout(resolve, 15000));
       return callGeminiAPI(prompt, retries - 1);
     }
     

@@ -19,7 +19,10 @@ export default function AyatHarian() {
 
   useEffect(() => {
     const fetchDaily = async () => {
-      const today = new Date().toISOString().split('T')[0];
+      // PERBAIKAN: Mengambil waktu lokal HP pengguna (WIB/WITA/WIT)
+      const now = new Date();
+      const today = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+      
       const saved = localStorage.getItem('quran_daily_motivation');
 
       if (saved) {

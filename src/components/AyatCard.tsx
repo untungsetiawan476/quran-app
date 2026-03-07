@@ -4,11 +4,10 @@ import { callGeminiAPI } from '@/lib/gemini';
 import { 
   BiPlayCircle, BiPauseCircle, BiBookmark, BiHeadphone, 
   BiImageAdd, BiBrain, BiFolderPlus, BiCheckCircle,
-  BiCopy, BiCheck, BiMicrophone // Ditambah BiMicrophone
+  BiCopy, BiCheck, BiMicrophone, BiMapPin // Tambahan BiMapPin untuk Terakhir Dibaca
 } from 'react-icons/bi';
 import { BsStars } from 'react-icons/bs';
 
-// Memanggil Komponen Ujian Suara yang baru kita buat
 import VoiceHafalan from './VoiceHafalan';
 
 interface AyatProps {
@@ -48,13 +47,15 @@ export default function AyatCard({
   const [isQuizMode, setIsQuizMode] = useState(false);
   const [hiddenWords, setHiddenWords] = useState<number[]>([]);
   
-  // STATE BARU: Untuk menampilkan Kuis Suara
   const [showVoiceQuiz, setShowVoiceQuiz] = useState(false);
 
   const [showPlaylistMenu, setShowPlaylistMenu] = useState(false);
   const [playlists, setPlaylists] = useState<string[]>([]);
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // STATE BARU: Untuk Terakhir Dibaca
+  const [isPinned, setIsPinned] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ambientRef = useRef<HTMLAudioElement | null>(null);
@@ -76,6 +77,18 @@ export default function AyatCard({
       ambientRef.current?.pause();
     };
   }, [audioUrl]);
+
+  // FUNGSI BARU: Simpan Terakhir Dibaca
+  const tandaiTerakhirDibaca = () => {
+    const lastReadData = {
+      surahId: nomorSurah,
+      surahName: surahName,
+      ayat: nomorAyat
+    };
+    localStorage.setItem('quran_last_read', JSON.stringify(lastReadData));
+    setIsPinned(true);
+    setTimeout(() => setIsPinned(false), 2000);
+  };
 
   const togglePlay = () => {
     if (isPlaying) {
@@ -249,6 +262,11 @@ export default function AyatCard({
               </button>
             )}
             
+            {/* TOMBOL PIN TERAKHIR DIBACA */}
+            <button onClick={tandaiTerakhirDibaca} className={`transition p-2 rounded-full ${isPinned ? 'text-emerald-500 bg-emerald-50 dark:bg-gray-700' : 'text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-gray-700'}`} title="Tandai Terakhir Dibaca">
+              {isPinned ? <BiCheckCircle size={24} /> : <BiMapPin size={24} />}
+            </button>
+            
             <button onClick={() => setShowFocusMenu(!showFocusMenu)} className={`transition p-2 rounded-full ${showFocusMenu ? 'bg-islamic-100 text-islamic-700 dark:bg-gray-700' : 'text-gray-400 hover:text-islamic-500 hover:bg-islamic-50 dark:hover:bg-gray-700'}`} title="Pusat Kontrol Belajar">
               <BiHeadphone size={24} />
             </button>
@@ -332,7 +350,6 @@ export default function AyatCard({
                 <BiBrain className="mr-2" size={20} /> {isQuizMode ? 'Selesai Uji Hafalan Teks' : 'Mulai Uji Hafalan Teks'}
               </button>
               
-              {/* TOMBOL BARU: UJI HAFALAN SUARA */}
               <button 
                 onClick={() => setShowVoiceQuiz(true)} 
                 className="flex items-center justify-center py-3 rounded-xl font-bold transition-all shadow-sm bg-slate-800 text-emerald-400 hover:bg-slate-700 w-full"
@@ -361,7 +378,6 @@ export default function AyatCard({
       <p className="text-sm text-islamic-600 dark:text-gold-400 font-medium italic mb-3 tracking-wide">{teksLatin}</p>
       <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed">{terjemahan}</p>
 
-      {/* RENDER KOMPONEN KUIS SUARA JIKA AKTIF */}
       {showVoiceQuiz && (
         <VoiceHafalan 
           teksArabAsli={teksArab} 
@@ -369,7 +385,6 @@ export default function AyatCard({
         />
       )}
 
-      {/* TAMPILAN TAFSIR & CAPTION SOSMED */}
       {tafsirData && (
         <div className="mt-6 space-y-4 animate-fade-in-up">
           <div className="p-6 bg-linear-to-br from-islamic-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-3xl border border-islamic-100 dark:border-gray-600 shadow-inner">
@@ -407,9 +422,7 @@ export default function AyatCard({
         </div>
       )}
 
-      {/* ========================================================== */}
-      {/* KANVAS POSTER TIKTOK - DESAIN SAMA DENGAN STUDIO           */}
-      {/* ========================================================== */}
+      {/* KANVAS POSTER */}
       <div 
         id={`poster-${nomorAyat}`} 
         style={{ 
@@ -449,7 +462,6 @@ export default function AyatCard({
             <span style={{ fontSize: '26px', color: '#94a3b8', fontWeight: 'bold' }}>— Q.S. {surahName} : {nomorAyat} —</span>
           </div>
           
-          {/* Box Hikmah Singkat */}
           {tafsirData && (
             <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '40px', borderRadius: '30px', borderLeft: '10px solid #fbbf24', margin: 0 }}>
               <h3 style={{ color: '#fbbf24', fontSize: '28px', marginBottom: '20px', marginTop: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>

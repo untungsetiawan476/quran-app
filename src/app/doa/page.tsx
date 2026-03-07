@@ -22,7 +22,10 @@ export default function DoaPage() {
     if (!curhat.trim()) return;
     setLoading(true);
     try {
-      const prompt = `Saya sedang merasa: "${curhat}". Berikan saya nasihat Islami yang sangat menenangkan hati, beserta satu rekomendasi doa pendek (maksimal 20 kata) yang relevan dengan kondisi saya. Balas HANYA dengan format JSON persis seperti ini tanpa tambahan teks/markdown apapun: {"nasihat": "1-2 paragraf nasihat penuh empati", "arab": "Teks Arab Doa", "latin": "Teks Latin", "arti": "Terjemahan", "sumber": "Sumber doa (misal: Q.S. Al-Baqarah: 286 atau HR. Bukhari)"}`;
+      // PROMPT ENGINEERING SULTAN: Memaksa AI membuat nasihat super pendek!
+      const prompt = `Saya sedang merasa: "${curhat}". Berikan saya nasihat Islami yang sangat menenangkan hati, beserta satu rekomendasi doa pendek (maksimal 20 kata) yang relevan dengan kondisi saya. 
+      SYARAT MUTLAK: Bagian "nasihat" HARUS SANGAT PENDEK, jadikan HANYA 2-3 kalimat saja! Jangan bertele-tele.
+      Balas HANYA dengan format JSON persis seperti ini tanpa tambahan teks/markdown apapun: {"nasihat": "nasihat singkat 2-3 kalimat", "arab": "Teks Arab Doa", "latin": "Teks Latin", "arti": "Terjemahan", "sumber": "Sumber doa (misal: Q.S. Al-Baqarah: 286 atau HR. Bukhari)"}`;
       
       const response = await callGeminiAPI(prompt);
       
@@ -57,7 +60,6 @@ export default function DoaPage() {
         const canvas = await html2canvas(element, { 
           scale: 2, 
           useCORS: true,
-          // Background diubah ke Dark Navy sesuai Studio
           backgroundColor: '#0f172a' 
         });
         element.style.display = 'none';
@@ -82,7 +84,6 @@ export default function DoaPage() {
         <p className="text-gray-500 dark:text-gray-400 text-sm">Temukan ketenangan dan doa yang tepat untuk setiap keluh kesahmu.</p>
       </div>
       
-      {/* KARTU INPUT CURHAT */}
       <div className="bg-linear-to-br from-emerald-500 to-teal-700 rounded-3xl p-6 shadow-xl mb-8 text-white relative overflow-hidden border border-emerald-400/50">
         <div className="absolute -right-4 -bottom-4 opacity-10">
            <BiMessageRoundedDots size={120} />
@@ -117,7 +118,6 @@ export default function DoaPage() {
         </div>
       </div>
 
-      {/* HASIL DOA */}
       {data && (
         <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 relative overflow-hidden group animate-fade-in-up">
           <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
@@ -157,9 +157,7 @@ export default function DoaPage() {
         </div>
       )}
 
-      {/* ======================================================== */}
-      {/* KANVAS POSTER TIKTOK - SINKRON DENGAN STUDIO AYAT        */}
-      {/* ======================================================== */}
+      {/* KANVAS POSTER TIKTOK */}
       {data && (
         <div 
           id="poster-doa" 
@@ -169,8 +167,8 @@ export default function DoaPage() {
             justifyContent: 'space-between', 
             alignItems: 'center',
             width: '1080px', 
-            height: '1920px', 
-            backgroundColor: '#0f172a', // <-- Dark Navy Sesuai Studio
+            minHeight: '1920px', // Gunakan minHeight agar tidak error jika terpaksa melar
+            backgroundColor: '#0f172a', 
             color: 'white', 
             fontFamily: 'sans-serif',
             padding: '120px 100px', 
@@ -178,27 +176,21 @@ export default function DoaPage() {
             position: 'relative'
           }}
         >
-          {/* Ornamen Latar */}
           <div style={{ position: 'absolute', top: '5%', right: '5%', opacity: '0.05' }}>
             <BiMessageRoundedDots size={400} color="#fbbf24" />
           </div>
           
-          {/* KOTAK KONTEN TENGAH */}
-          {/* Border disamakan solid #fbbf24 (Gold) seperti Studio */}
           <div style={{ width: '100%', zIndex: 10, border: '4px solid #fbbf24', borderRadius: '60px', padding: '80px', backgroundColor: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(10px)' }}>
             
-            {/* Nasihat Section */}
             <div style={{ marginBottom: '60px', borderBottom: '2px dashed rgba(255,255,255,0.2)', paddingBottom: '50px' }}>
               <h2 style={{ color: '#fbbf24', fontSize: '30px', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '30px', display: 'flex', alignItems: 'center' }}>
                 <BsStars size={40} color="#fbbf24" style={{ marginRight: '15px' }} /> Nasihat Untukmu
               </h2>
-              {/* Teks tidak dipotong lagi */}
-              <p style={{ fontSize: '30px', color: '#e2e8f0', lineHeight: '1.8', margin: 0, fontStyle: 'italic' }}>
+              <p style={{ fontSize: '30px', color: '#e2e8f0', lineHeight: '1.8', margin: 0, fontStyle: 'italic', whiteSpace: 'pre-wrap' }}>
                 &quot;{data.nasihat}&quot;
               </p>
             </div>
 
-            {/* Doa Section */}
             <div style={{ textAlign: 'center' }}>
               <span style={{ display: 'inline-block', backgroundColor: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', padding: '10px 30px', borderRadius: '50px', fontSize: '24px', fontWeight: 'bold', marginBottom: '50px', letterSpacing: '2px' }}>
                 DOA HARI INI
@@ -218,7 +210,6 @@ export default function DoaPage() {
             </div>
           </div>
 
-          {/* WATERMARK PROMOSI TIKTOK DI BAWAH */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10, marginTop: '40px' }}>
             <p style={{ color: '#fbbf24', fontSize: '36px', fontWeight: 'bold', margin: '0 0 15px 0', letterSpacing: '2px', textAlign: 'center' }}>
               TEMUKAN DOA UNTUK MASALAHMU

@@ -57,8 +57,8 @@ export default function DoaPage() {
         const canvas = await html2canvas(element, { 
           scale: 2, 
           useCORS: true,
-          // Mengganti background kanvas dari ungu menjadi Emerald gelap
-          backgroundColor: '#064e3b' 
+          // Background diubah ke Dark Navy sesuai Studio
+          backgroundColor: '#0f172a' 
         });
         element.style.display = 'none';
 
@@ -82,7 +82,7 @@ export default function DoaPage() {
         <p className="text-gray-500 dark:text-gray-400 text-sm">Temukan ketenangan dan doa yang tepat untuk setiap keluh kesahmu.</p>
       </div>
       
-      {/* KARTU INPUT CURHAT - Tema diubah ke Emerald */}
+      {/* KARTU INPUT CURHAT */}
       <div className="bg-linear-to-br from-emerald-500 to-teal-700 rounded-3xl p-6 shadow-xl mb-8 text-white relative overflow-hidden border border-emerald-400/50">
         <div className="absolute -right-4 -bottom-4 opacity-10">
            <BiMessageRoundedDots size={120} />
@@ -117,7 +117,7 @@ export default function DoaPage() {
         </div>
       </div>
 
-      {/* HASIL DOA - Aksen diubah ke Emerald & Gold */}
+      {/* HASIL DOA */}
       {data && (
         <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 relative overflow-hidden group animate-fade-in-up">
           <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
@@ -158,7 +158,7 @@ export default function DoaPage() {
       )}
 
       {/* ======================================================== */}
-      {/* KANVAS POSTER TIKTOK - DENGAN TEMA EMERALD & FULL TEXT */}
+      {/* KANVAS POSTER TIKTOK - SINKRON DENGAN STUDIO AYAT        */}
       {/* ======================================================== */}
       {data && (
         <div 
@@ -170,7 +170,7 @@ export default function DoaPage() {
             alignItems: 'center',
             width: '1080px', 
             height: '1920px', 
-            backgroundColor: '#064e3b', // Warna Emerald Gelap 
+            backgroundColor: '#0f172a', // <-- Dark Navy Sesuai Studio
             color: 'white', 
             fontFamily: 'sans-serif',
             padding: '120px 100px', 
@@ -184,15 +184,16 @@ export default function DoaPage() {
           </div>
           
           {/* KOTAK KONTEN TENGAH */}
-          <div style={{ width: '100%', zIndex: 10, border: '4px solid rgba(16, 185, 129, 0.4)', borderRadius: '60px', padding: '80px', backgroundColor: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(10px)' }}>
+          {/* Border disamakan solid #fbbf24 (Gold) seperti Studio */}
+          <div style={{ width: '100%', zIndex: 10, border: '4px solid #fbbf24', borderRadius: '60px', padding: '80px', backgroundColor: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(10px)' }}>
             
-            {/* Nasihat Section (PEMBATAS SUBSTRING DIHAPUS) */}
+            {/* Nasihat Section */}
             <div style={{ marginBottom: '60px', borderBottom: '2px dashed rgba(255,255,255,0.2)', paddingBottom: '50px' }}>
               <h2 style={{ color: '#fbbf24', fontSize: '30px', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '30px', display: 'flex', alignItems: 'center' }}>
                 <BsStars size={40} color="#fbbf24" style={{ marginRight: '15px' }} /> Nasihat Untukmu
               </h2>
-              {/* Ini dia perbaikannya: Menampilkan teks penuh tanpa dipotong! */}
-              <p style={{ fontSize: '30px', color: '#ecfdf5', lineHeight: '1.8', margin: 0, fontStyle: 'italic' }}>
+              {/* Teks tidak dipotong lagi */}
+              <p style={{ fontSize: '30px', color: '#e2e8f0', lineHeight: '1.8', margin: 0, fontStyle: 'italic' }}>
                 &quot;{data.nasihat}&quot;
               </p>
             </div>
@@ -207,12 +208,12 @@ export default function DoaPage() {
                 {data.arab}
               </p>
               
-              <p style={{ textAlign: 'center', fontSize: '34px', color: '#a7f3d0', marginBottom: '60px', lineHeight: '1.6' }}>
+              <p style={{ textAlign: 'center', fontSize: '34px', color: '#e2e8f0', marginBottom: '60px', lineHeight: '1.6' }}>
                 &quot;{data.arti}&quot;
               </p>
 
               <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '28px', color: '#34d399', fontWeight: 'bold' }}>Sumber: {data.sumber}</span>
+                <span style={{ fontSize: '28px', color: '#94a3b8', fontWeight: 'bold' }}>Sumber: {data.sumber}</span>
               </div>
             </div>
           </div>
@@ -223,7 +224,7 @@ export default function DoaPage() {
               TEMUKAN DOA UNTUK MASALAHMU
             </p>
             <div style={{ backgroundColor: 'white', padding: '20px 50px', borderRadius: '50px', border: '4px solid #fbbf24', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
-              <span style={{ color: '#064e3b', fontSize: '34px', fontWeight: 'bold' }}>
+              <span style={{ color: '#0f172a', fontSize: '34px', fontWeight: 'bold' }}>
                 quran-app-two-eta.vercel.app
               </span>
             </div>

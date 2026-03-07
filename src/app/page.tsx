@@ -117,12 +117,12 @@ export default function Home() {
           </Link>
 
           {/* Tombol 3: Arah Kiblat */}
-          <Link href="#" className="flex flex-col items-center group opacity-80 hover:opacity-100">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-active:scale-95 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/50">
-              <BiCompass size={28} />
-            </div>
-            <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Kiblat</span>
-          </Link>
+          <Link href="/kiblat" className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center gap-2 hover:shadow-md transition">
+  <div className="w-12 h-12 bg-rose-50 dark:bg-gray-700 text-rose-500 dark:text-rose-400 rounded-full flex items-center justify-center">
+    <BiCompass size={24} />
+  </div>
+  <span className="text-xs font-bold text-gray-700 dark:text-gray-200">Kiblat</span>
+</Link>
 
           {/* Tombol 4: Khatam Planner (Sultan Feature) */}
           <Link href="/khatam" className="flex flex-col items-center group">

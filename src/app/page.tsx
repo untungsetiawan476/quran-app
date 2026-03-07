@@ -118,8 +118,8 @@ export default function Home() {
 
           {/* Tombol 3: Arah Kiblat */}
           <Link href="/kiblat" className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center gap-2 hover:shadow-md transition">
-  <div className="w-12 h-12 bg-rose-50 dark:bg-gray-700 text-rose-500 dark:text-rose-400 rounded-full flex items-center justify-center">
-    <BiCompass size={24} />
+  <div className="w-14 h-14 bg-rose-50 dark:bg-gray-700 text-rose-500 dark:text-rose-400 rounded-full flex items-center justify-center">
+    <BiCompass size={28} />
   </div>
   <span className="text-xs font-bold text-gray-700 dark:text-gray-200">Kiblat</span>
 </Link>

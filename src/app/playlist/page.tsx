@@ -32,13 +32,11 @@ export default function PlaylistPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // 1. Ambil data FOLDER dari LocalStorage
   useEffect(() => {
     const saved = localStorage.getItem('quran_playlists'); 
     if (saved) {
       const parsed = JSON.parse(saved);
       
-      // PERBAIKAN SULTAN: Dibungkus setTimeout agar Satpam ESLint tidak marah!
       setTimeout(() => {
         setSemuaFolder(parsed);
         
@@ -54,7 +52,6 @@ export default function PlaylistPage() {
     return semuaFolder[activeFolder] || [];
   }, [semuaFolder, activeFolder]);
 
-  // 2. Logika Pemutar Audio Otomatis
   useEffect(() => {
     if (currentIndex !== null && koleksiAktif[currentIndex]) {
       
@@ -140,12 +137,23 @@ export default function PlaylistPage() {
     }
   };
 
+  // Fitur Baru: Menghapus Folder yang Kosong/Nyangkut
+  const hapusFolderAktif = () => {
+    const dataBaru = { ...semuaFolder };
+    delete dataBaru[activeFolder];
+    
+    const sisaFolder = Object.keys(dataBaru);
+    setSemuaFolder(dataBaru);
+    setActiveFolder(sisaFolder.length > 0 ? sisaFolder[0] : '');
+    localStorage.setItem('quran_playlists', JSON.stringify(dataBaru));
+  };
+
   const daftarNamaFolder = Object.keys(semuaFolder);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-32">
-      {/* HEADER SULTAN */}
-      <div className="bg-emerald-600 dark:bg-emerald-800 pt-12 pb-8 px-6 rounded-b-[2.5rem] shadow-lg relative overflow-hidden">
+      {/* HEADER SULTAN - Padding bawah (pb) diperbesar jadi 12 agar tidak nabrak tombol */}
+      <div className="bg-emerald-600 dark:bg-emerald-800 pt-12 pb-12 px-6 rounded-b-[2.5rem] shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3"></div>
         <div className="relative z-10 flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 border border-white/30 shadow-inner">
@@ -158,7 +166,7 @@ export default function PlaylistPage() {
         </div>
       </div>
 
-      <div className="p-5 -mt-6 relative z-20 max-w-md mx-auto">
+      <div className="p-5 -mt-8 relative z-20 max-w-md mx-auto">
         
         {/* PILIH FOLDER (Bisa di-scroll ke samping) */}
         {daftarNamaFolder.length > 0 && (
@@ -172,7 +180,7 @@ export default function PlaylistPage() {
                   setIsPlaying(false);
                   audioRef.current?.pause();
                 }}
-                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                className={`px-4 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                   activeFolder === folder
                     ? 'bg-emerald-600 text-white shadow-md'
                     : 'bg-white dark:bg-gray-800 text-gray-500 border border-gray-200 dark:border-gray-700'
@@ -202,8 +210,9 @@ export default function PlaylistPage() {
           </button>
         )}
 
-        {/* JIKA SAMA SEKALI KOSONG */}
+        {/* LOGIKA TAMPILAN BERDASARKAN ISI KONTEN */}
         {daftarNamaFolder.length === 0 ? (
+          /* JIKA SAMA SEKALI KOSONG (0 Folder) */
           <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 text-center shadow-sm border border-gray-100 dark:border-gray-700 mt-6">
             <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
               <BsStars size={40} className="text-gray-400 dark:text-gray-500" />
@@ -215,6 +224,23 @@ export default function PlaylistPage() {
             <Link href="/quran" className="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md">
               <BiLeftArrowAlt size={20} className="mr-2" /> Eksplorasi Qur&apos;an
             </Link>
+          </div>
+        ) : koleksiAktif.length === 0 ? (
+          /* JIKA ADA FOLDER, TAPI ISINYA 0 (Nyangkut/Hantu) */
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 text-center shadow-sm border border-gray-100 dark:border-gray-700 mt-2">
+             <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+               <BiBookmarkHeart size={32} className="text-gray-400 dark:text-gray-500" />
+             </div>
+             <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">Folder Ini Kosong</h3>
+             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+               Silakan tambahkan ayat dari halaman baca, atau hapus folder ini jika tidak digunakan.
+             </p>
+             <button 
+               onClick={hapusFolderAktif}
+               className="inline-flex items-center justify-center bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-500 px-6 py-3 rounded-xl font-bold transition-all border border-red-100 dark:border-red-900/50"
+             >
+               <BiTrash size={20} className="mr-2" /> Hapus Folder Ini
+             </button>
           </div>
         ) : (
           /* JIKA ADA ISINYA (DAFTAR AYAT DI FOLDER AKTIF) */
@@ -271,8 +297,8 @@ export default function PlaylistPage() {
         )}
       </div>
       
-      {/* PANDUAN PENGGUNA */}
-      {daftarNamaFolder.length > 0 && (
+      {/* PANDUAN PENGGUNA (Otomatis Muncul Kalau Ada Ayat) */}
+      {daftarNamaFolder.length > 0 && koleksiAktif.length > 0 && (
         <div className="max-w-md mx-auto px-5 mt-8 mb-4 flex items-start text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800/50 p-4 rounded-2xl">
            <BiInfoCircle size={18} className="mr-2 shrink-0 text-amber-500" />
            <p>Pilih folder di atas, lalu gunakan tombol &quot;Putar Semua Ayat&quot; untuk memutar murottal secara berurutan, cocok untuk muroja&apos;ah hafalan.</p>

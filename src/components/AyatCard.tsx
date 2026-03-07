@@ -115,9 +115,15 @@ export default function AyatCard({
   const handleTafsirAI = async () => {
     setLoading(true);
     try {
-      const prompt = `Berikan tafsir, penjelasan singkat, dan hikmah yang lembut dalam 2-3 paragraf untuk Surah ${surahName} ayat ${nomorAyat}. Teks terjemahan: "${terjemahan}". Gunakan bahasa Indonesia yang santun dan menenangkan.`;
+      // PROMPT ENGINEERING SULTAN: Kita paksa AI merangkum maksimal 3 kalimat saja!
+      const prompt = `Berikan intisari atau hikmah dari Surah ${surahName} ayat ${nomorAyat}. Teks terjemahan: "${terjemahan}". 
+      SYARAT MUTLAK: 
+      1. Jadikan HANYA 1 paragraf pendek (maksimal 2-3 kalimat saja). 
+      2. Jangan bertele-tele, langsung ke intinya. 
+      3. Gunakan bahasa yang menyentuh hati dan mudah dipahami untuk caption Instagram/TikTok.`;
+      
       const response = await callGeminiAPI(prompt);
-      setTafsir(response.replace(/\*\*/g, '')); // Hapus markdown tebal
+      setTafsir(response.replace(/\*\*/g, ''));
     } catch {
       setTafsir("Maaf, gagal memuat tafsir AI saat ini.");
     }
@@ -162,11 +168,11 @@ export default function AyatCard({
       const html2canvas = (await import('html2canvas')).default;
       const element = document.getElementById(`poster-${nomorAyat}`);
       if (element) {
-        element.style.display = 'flex'; // Pakai flex agar layout bekerja
+        element.style.display = 'flex'; 
         const canvas = await html2canvas(element, { 
           scale: 2, 
           useCORS: true, 
-          backgroundColor: '#0f172a' // Tema Dark Navy
+          backgroundColor: '#0f172a' 
         });
         element.style.display = 'none';
         const image = canvas.toDataURL("image/jpeg", 0.9);
@@ -310,13 +316,13 @@ export default function AyatCard({
 
       {tafsir && (
         <div className="mt-6 p-6 bg-linear-to-br from-islamic-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-3xl border border-islamic-100 dark:border-gray-600 shadow-inner">
-          <h4 className="flex items-center text-xs font-black text-islamic-700 dark:text-gold-400 mb-4 uppercase tracking-[0.2em]"><BsStars className="mr-2" size={18} /> Hikmah & Tafsir AI</h4>
+          <h4 className="flex items-center text-xs font-black text-islamic-700 dark:text-gold-400 mb-4 uppercase tracking-[0.2em]"><BsStars className="mr-2" size={18} /> Hikmah Singkat AI</h4>
           <div className="text-sm text-gray-700 dark:text-gray-300 space-y-3 whitespace-pre-wrap leading-loose">{tafsir}</div>
         </div>
       )}
 
       {/* ========================================================== */}
-      {/* KANVAS POSTER TIKTOK - DESAIN SAMA DENGAN STUDIO & DOA   */}
+      {/* KANVAS POSTER TIKTOK - DESAIN SAMA DENGAN STUDIO         */}
       {/* ========================================================== */}
       <div 
         id={`poster-${nomorAyat}`} 
@@ -327,7 +333,7 @@ export default function AyatCard({
           alignItems: 'center',
           width: '1080px', 
           minHeight: '1920px', 
-          backgroundColor: '#0f172a', // Dark Navy
+          backgroundColor: '#0f172a', 
           color: 'white', 
           fontFamily: 'sans-serif',
           padding: '120px 100px',
@@ -335,10 +341,8 @@ export default function AyatCard({
           position: 'relative'
         }}
       >
-        {/* KOTAK KONTEN TENGAH */}
         <div style={{ width: '100%', zIndex: 10, border: '4px solid #fbbf24', borderRadius: '60px', padding: '80px', backgroundColor: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', gap: '30px', position: 'relative' }}>
           
-          {/* Bintang Atas untuk menutupi border */}
           <div style={{ position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#0f172a', padding: '0 30px' }}>
             <BsStars size={80} color="#fbbf24" />
           </div>
@@ -359,20 +363,19 @@ export default function AyatCard({
             <span style={{ fontSize: '26px', color: '#94a3b8', fontWeight: 'bold' }}>— Q.S. {surahName} : {nomorAyat} —</span>
           </div>
           
-          {/* Box Hikmah Singkat */}
+          {/* Box Hikmah Singkat: Langsung cetak penuh, AI sudah dibrifing bikin ringkas! */}
           {tafsir && (
             <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '40px', borderRadius: '30px', borderLeft: '10px solid #fbbf24', margin: 0 }}>
               <h3 style={{ color: '#fbbf24', fontSize: '28px', marginBottom: '20px', marginTop: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
                 <BsStars size={32} style={{ marginRight: '15px' }} /> Hikmah Singkat
               </h3>
-              <p style={{ fontSize: '26px', color: '#e2e8f0', lineHeight: '1.6', margin: 0 }}>
+              <p style={{ fontSize: '26px', color: '#e2e8f0', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap' }}>
                 {tafsir}
               </p>
             </div>
           )}
         </div>
 
-        {/* WATERMARK PROMOSI TIKTOK DI BAWAH */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10, marginTop: '60px' }}>
           <p style={{ color: '#fbbf24', fontSize: '28px', fontWeight: 'bold', margin: '0 0 15px 0', letterSpacing: '2px', textTransform: 'uppercase' }}>
             BACA TAFSIR LENGKAPNYA DI

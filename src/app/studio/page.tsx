@@ -14,43 +14,36 @@ interface ContentData {
 }
 
 export default function StudioKontenPage() {
+  // Tema default
   const [tema, setTema] = useState('Penenang Hati & Overthinking');
+  const [jenisKonten, setJenisKonten] = useState('Ayat Al-Qur\'an'); 
+  
   const [data, setData] = useState<ContentData | null>(null);
   const [loading, setLoading] = useState(false);
   const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // DAFTAR 24 TEMA KONTEN "FYP BAITER" (Dikumpulkan berdasarkan tren Dakwah Sosmed)
   const daftarTema = [
-    // 🧠 Kategori Mental & Ketenangan Hati
     "Penenang Hati & Overthinking", 
     "Kesabaran & Ujian Hidup", 
     "Melepaskan Masa Lalu (Move On)",
     "Mengatasi Rasa Insecure",
     "Tawakkal & Pasrah Total",
     "Obat Sedih & Patah Hati",
-    
-    // 💼 Kategori Rezeki, Karir & Masa Depan
     "Doa Pembuka Pintu Rezeki", 
     "Motivasi Belajar & Sukses",
     "Keajaiban Jalur Langit",
     "Jalan Keluar dari Hutang",
     "Mencari Keberkahan Kerja",
-    
-    // 📿 Kategori Ibadah & Taubat
     "Merasa Banyak Dosa (Taubat)",
     "Semangat Bangun Tahajud",
     "Menjaga Istiqomah (Konsisten)",
     "Keutamaan Sedekah",
     "Self-Reminder Kematian",
-    
-    // 👨‍👩‍👧‍👦 Kategori Hubungan & Sosial
     "Galau Meminta Jodoh",
     "Berbakti pada Ayah Ibu",
     "Sabar Menghadapi Orang Lain",
     "Nasihat Menjaga Lisan",
-    
-    // 🌅 Kategori Harian (Waktu Spesifik)
     "Mensyukuri Nikmat Hari Ini",
     "Doa Pagi Pembuka Hari",
     "Doa Malam & Tidur Tenang",
@@ -58,16 +51,21 @@ export default function StudioKontenPage() {
   ];
 
   const handleGenerate = async () => {
+    // Validasi kalau kotak input kosong
+    if (!tema.trim()) {
+      alert("Isi dulu temanya ya, Mas!");
+      return;
+    }
+
     setLoading(true);
     setData(null);
     try {
-      // PROMPT SULTAN: Paksa AI mencari ayat/hadits yang bervariasi dan anti-mainstream!
       const prompt = `Saya seorang content creator dakwah. Buatkan 1 konten Islami yang SANGAT RELEVAN dengan tema: "${tema}".
-      PENTING: Pilih Ayat Al-Qur'an, Hadits Shahih, ATAU Doa secara ACAK. Eksplorasi ayat/hadits yang jarang dibahas namun memiliki makna yang sangat mendalam dan menyentuh hati. Jangan gunakan ayat yang itu-itu saja.
+      PENTING: Konten ini HARUS HANYA berupa ${jenisKonten}. Jangan gunakan sumber lain. Jika diminta Hadits, pastikan itu Hadits Shahih. Eksplorasi ${jenisKonten} yang maknanya sangat mendalam dan menyentuh hati.
       Teks Arab maksimal 25 kata agar muat di poster.
       Balas HANYA dengan JSON murni tanpa tambahan apapun (tanpa markdown/backtick): 
       {
-        "jenis": "Ayat / Hadits / Doa", 
+        "jenis": "${jenisKonten}", 
         "sumber": "Contoh: Q.S. Al-Baqarah : 286 atau HR. Bukhari", 
         "arab": "Teks Arab", 
         "terjemahan": "Terjemahan Bahasa Indonesia", 
@@ -117,7 +115,10 @@ export default function StudioKontenPage() {
         const image = canvas.toDataURL("image/jpeg", 0.9);
         const link = document.createElement('a');
         link.href = image;
-        link.download = `Konten-${tema.replace(/\s+/g, '-')}.jpg`;
+        
+        // Bersihkan nama file dari karakter aneh jika user ngetik aneh-aneh
+        const safeFileName = tema.replace(/[^a-zA-Z0-9]/g, '-').substring(0, 30);
+        link.download = `Konten-${jenisKonten}-${safeFileName}.jpg`;
         link.click();
       }
     } catch (error) {
@@ -128,10 +129,8 @@ export default function StudioKontenPage() {
   };
 
   const getJudulPoster = () => {
-    if (!data) return "PESAN HARI INI";
-    const jenis = data.jenis.toLowerCase();
-    if (jenis.includes('doa')) return "DOA HARI INI";
-    if (jenis.includes('hadits')) return "HADITS HARI INI";
+    if (jenisKonten === 'Doa') return "DOA HARI INI";
+    if (jenisKonten === 'Hadits') return "HADITS HARI INI";
     return "PESAN HARI INI";
   };
 
@@ -146,23 +145,56 @@ export default function StudioKontenPage() {
       
       {/* AREA KONTROL */}
       <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 mb-8">
-        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-4 uppercase tracking-wider">
-          Pilih Tema Konten Hari Ini:
+        
+        {/* BAGIAN 1: KETIK / PILIH TEMA */}
+        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
+          1. Ketik / Pilih Tema:
         </label>
         
-        {/* Kontainer tema sekarang dibuat bisa di-scroll (max-height) agar rapi karena jumlahnya banyak */}
-        <div className="flex flex-wrap gap-2.5 mb-6 max-h-60 overflow-y-auto p-1 hide-scrollbar">
+        {/* KOTAK INPUT CUSTOM (FITUR BARU SULTAN!) */}
+        <div className="mb-3">
+          <input 
+            type="text" 
+            value={tema}
+            onChange={(e) => setTema(e.target.value)}
+            placeholder="Ketik tema bebas... (Misal: Doa lulus ujian CPNS)"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium"
+          />
+        </div>
+
+        {/* TOMBOL PINTASAN TEMA */}
+        <div className="flex flex-wrap gap-2.5 mb-6 max-h-40 overflow-y-auto p-1 hide-scrollbar border-b border-gray-100 dark:border-gray-700 pb-4">
           {daftarTema.map((t) => (
             <button
               key={t}
               onClick={() => setTema(t)}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-semibold transition-all duration-300 ${
+              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-300 ${
                 tema === t 
-                  ? 'bg-slate-800 text-white dark:bg-gold-500 dark:text-slate-900 shadow-md scale-105 border border-transparent' 
+                  ? 'bg-slate-800 text-white dark:bg-gold-500 dark:text-slate-900 shadow-md border border-transparent' 
                   : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-400 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:border-gray-400'
               }`}
             >
               {t}
+            </button>
+          ))}
+        </div>
+
+        {/* BAGIAN 2: PILIH JENIS SUMBER */}
+        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
+          2. Pilih Sumber Teks:
+        </label>
+        <div className="flex gap-2 mb-8">
+          {['Ayat Al-Qur\'an', 'Hadits', 'Doa'].map((jenis) => (
+            <button
+              key={jenis}
+              onClick={() => setJenisKonten(jenis)}
+              className={`flex-1 py-3 rounded-2xl text-xs font-bold transition-all duration-300 ${
+                jenisKonten === jenis
+                  ? 'bg-indigo-600 text-white shadow-md border border-transparent scale-105'
+                  : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 dark:bg-gray-700/50 dark:text-gray-300 dark:border-gray-600'
+              }`}
+            >
+              {jenis}
             </button>
           ))}
         </div>
@@ -233,9 +265,7 @@ export default function StudioKontenPage() {
         </div>
       )}
 
-      {/* ======================================================== */}
-      {/* KANVAS POSTER RAHASIA DENGAN SAFE ZONE YOUTUBE SHORTS    */}
-      {/* ======================================================== */}
+      {/* KANVAS POSTER YOUTUBE SAFE ZONE */}
       {data && (
         <div 
           id="poster-studio" 

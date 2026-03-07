@@ -140,7 +140,7 @@ export default function AyatCard({
   };
 
   const handleTafsirAI = async () => {
-    setTafsirData(null); // Reset tafsir lama
+    setTafsirData(null); 
     setLoading(true);
     try {
       const prompt = `Berikan intisari atau hikmah dari Surah ${surahName} ayat ${nomorAyat}. Teks terjemahan: "${terjemahan}". 
@@ -253,8 +253,13 @@ export default function AyatCard({
           {nomorAyat}
         </div>
         
-        <div className="flex flex-col items-end space-y-2 relative">
-          <div className="flex space-x-2 items-center">
+        {/* ========================================================== */}
+        {/* PERBAIKAN LAYOUT TOMBOL (DIBAGI 2 BARIS)                     */}
+        {/* ========================================================== */}
+        <div className="flex flex-col items-end space-y-3 relative w-full">
+          
+          {/* Baris 1: Ikon-ikon kecil */}
+          <div className="flex flex-wrap justify-end gap-1.5 sm:gap-2 items-center">
             {showPosterBtn && (
               <button onClick={downloadPoster} disabled={isGeneratingPoster} className={`transition p-2 rounded-full text-gray-400 hover:text-islamic-500 hover:bg-islamic-50 dark:hover:bg-gray-700`} title="Jadikan Poster">
                 {isGeneratingPoster ? <span className="flex h-5 w-5 relative"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-islamic-400 opacity-75"></span><span className="relative inline-flex rounded-full h-5 w-5 bg-islamic-500"></span></span> : <BiImageAdd size={24} />}
@@ -276,37 +281,35 @@ export default function AyatCard({
             <button onClick={togglePlay} className={`${isPlaying ? 'text-gold-500 animate-pulse' : 'text-islamic-500 hover:text-islamic-700'} transition p-1`}>
               {isPlaying ? <BiPauseCircle size={32} /> : <BiPlayCircle size={32} />}
             </button>
-
-            {/* ============================================================ */}
-            {/* TOMBOL AI SUPER PREMIUM (SUDAH KOTAK MELEBAR DENGAN TEKS)    */}
-            {/* ============================================================ */}
-            <button 
-              onClick={handleTafsirAI} 
-              disabled={loading} 
-              className={`transition-all duration-300 relative px-4 py-2.5 rounded-2xl flex items-center shadow-sm border
-                ${loading 
-                  ? 'bg-slate-100 text-slate-400 border-slate-200' 
-                  : 'bg-gold-50 hover:bg-gold-100 dark:bg-gold-950/30 text-gold-600 dark:text-gold-400 border-gold-200 dark:border-gold-800 hover:shadow-md'
-                }`}
-              title="Bedah Ayat pakai AI"
-            >
-              {loading ? (
-                <span className="flex h-5 w-5 mr-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-5 w-5 bg-gold-500"></span>
-                </span>
-              ) : (
-                <BsStars size={20} className="mr-2 animate-pulse" />
-              )}
-              <span className="font-bold text-xs">
-                {loading ? 'Meracik...' : 'Bedah AI'}
-              </span>
-            </button>
-            {/* ============================================================ */}
           </div>
 
+          {/* Baris 2: Tombol Bedah AI (Aman di bawah) */}
+          <button 
+            onClick={handleTafsirAI} 
+            disabled={loading} 
+            className={`transition-all duration-300 relative px-4 py-2 rounded-xl flex items-center shadow-sm border
+              ${loading 
+                ? 'bg-slate-100 text-slate-400 border-slate-200' 
+                : 'bg-gold-50 hover:bg-gold-100 dark:bg-gold-950/30 text-gold-600 dark:text-gold-400 border-gold-200 dark:border-gold-800 hover:shadow-md'
+              }`}
+            title="Bedah Ayat pakai AI"
+          >
+            {loading ? (
+              <span className="flex h-5 w-5 mr-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-5 w-5 bg-gold-500"></span>
+              </span>
+            ) : (
+              <BsStars size={20} className="mr-2 animate-pulse" />
+            )}
+            <span className="font-bold text-xs">
+              {loading ? 'Meracik...' : 'Bedah AI'}
+            </span>
+          </button>
+
+          {/* Popups Menu */}
           {showPlaylistMenu && (
-            <div className="absolute top-12 right-0 z-20 bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xl w-64 animate-fade-in-down">
+            <div className="absolute top-24 right-0 z-20 bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xl w-64 animate-fade-in-down">
               <h4 className="text-[10px] font-bold text-gray-400 mb-3 uppercase tracking-widest">Simpan ke Folder</h4>
               {saveSuccess ? (
                 <div className="flex items-center text-emerald-600 dark:text-emerald-400 text-sm font-bold py-2 italic">
@@ -345,7 +348,7 @@ export default function AyatCard({
           )}
 
           {showFocusMenu && (
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 flex flex-col gap-4 text-sm animate-fade-in-down w-full max-w-xs justify-end shadow-xl mt-2 z-20">
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 flex flex-col gap-4 text-sm animate-fade-in-down w-full max-w-xs justify-end shadow-xl mt-2 z-20 absolute top-24 right-0">
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold text-gray-400 mb-2 uppercase">Ulangi:</span>

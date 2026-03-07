@@ -26,7 +26,6 @@ export default function DoaPage() {
       
       const response = await callGeminiAPI(prompt);
       
-      // CCTV 1: Kita lihat balasan mentah dari AI di Console
       console.log("BALASAN MENTAH GEMINI:", response); 
       
       const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -34,7 +33,6 @@ export default function DoaPage() {
       
       setData(parsedData);
     } catch (error) { 
-      // CCTV 2: Kita lihat error aslinya di Console
       console.error("ERROR GEMINI TERDETEKSI:", error); 
       
       setData({
@@ -59,7 +57,8 @@ export default function DoaPage() {
         const canvas = await html2canvas(element, { 
           scale: 2, 
           useCORS: true,
-          backgroundColor: '#2e1065' 
+          // Mengganti background kanvas dari ungu menjadi Emerald gelap
+          backgroundColor: '#064e3b' 
         });
         element.style.display = 'none';
 
@@ -83,33 +82,34 @@ export default function DoaPage() {
         <p className="text-gray-500 dark:text-gray-400 text-sm">Temukan ketenangan dan doa yang tepat untuk setiap keluh kesahmu.</p>
       </div>
       
-      <div className="bg-linear-to-br from-purple-500 to-indigo-600 rounded-3xl p-6 shadow-xl mb-8 text-white relative overflow-hidden border border-purple-400/50">
+      {/* KARTU INPUT CURHAT - Tema diubah ke Emerald */}
+      <div className="bg-linear-to-br from-emerald-500 to-teal-700 rounded-3xl p-6 shadow-xl mb-8 text-white relative overflow-hidden border border-emerald-400/50">
         <div className="absolute -right-4 -bottom-4 opacity-10">
            <BiMessageRoundedDots size={120} />
         </div>
 
         <div className="relative z-10">
           <div className="flex items-center mb-4">
-            <BiMessageRoundedDots size={28} className="mr-3" />
+            <BiMessageRoundedDots size={28} className="mr-3 text-gold-300" />
             <h2 className="text-xl font-bold tracking-wide">Curhat Doa AI ✨</h2>
           </div>
-          <p className="text-sm mb-5 opacity-90 leading-relaxed">Ketikkan perasaan atau masalahmu saat ini. Dapatkan nasihat Islami dan rekomendasi doa khusus untukmu.</p>
+          <p className="text-sm mb-5 opacity-90 leading-relaxed text-emerald-50">Ketikkan perasaan atau masalahmu saat ini. Dapatkan nasihat Islami dan rekomendasi doa khusus untukmu.</p>
           
           <textarea 
             value={curhat}
             onChange={(e) => setCurhat(e.target.value)}
             placeholder="Misal: Saya sedang cemas karena besok mau ujian..."
-            className="w-full p-4 rounded-2xl text-gray-800 dark:text-gray-100 dark:bg-gray-800/90 mb-4 focus:outline-none focus:ring-4 focus:ring-gold-400/50 transition-all border-none shadow-inner resize-none"
+            className="w-full p-4 rounded-2xl text-gray-800 dark:text-gray-100 dark:bg-gray-800/90 mb-4 focus:outline-none focus:ring-4 focus:ring-gold-400/50 transition-all border-none shadow-inner resize-none placeholder-gray-400"
             rows={3}
           />
           
           <button 
             onClick={handleCurhat}
             disabled={loading}
-            className="w-full bg-gold-500 hover:bg-gold-400 text-islamic-900 font-bold py-3.5 rounded-2xl transition-all shadow-lg active:scale-95 flex justify-center items-center"
+            className="w-full bg-gold-500 hover:bg-gold-400 text-emerald-900 font-bold py-3.5 rounded-2xl transition-all shadow-lg active:scale-95 flex justify-center items-center"
           >
             {loading ? (
-              <span className="flex items-center"><span className="animate-spin rounded-full h-5 w-5 border-b-2 border-islamic-900 mr-2"></span> Menyusun Nasihat...</span>
+              <span className="flex items-center"><span className="animate-spin rounded-full h-5 w-5 border-b-2 border-emerald-900 mr-2"></span> Menyusun Nasihat...</span>
             ) : (
               <><BsStars className="mr-2" size={20} /> Dapatkan Nasihat & Doa</>
             )}
@@ -117,21 +117,22 @@ export default function DoaPage() {
         </div>
       </div>
 
+      {/* HASIL DOA - Aksen diubah ke Emerald & Gold */}
       {data && (
-        <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 relative overflow-hidden group">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 relative overflow-hidden group animate-fade-in-up">
           <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
-            <h3 className="flex items-center text-sm font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
-              <BiBookHeart className="mr-2" size={20} /> Jawaban Untukmu
+            <h3 className="flex items-center text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+              <BiBookHeart className="mr-2 text-gold-500" size={20} /> Jawaban Untukmu
             </h3>
             
             <button 
               onClick={downloadTikTokPoster} 
               disabled={isGeneratingPoster} 
-              className="bg-purple-100 dark:bg-gray-700 text-purple-600 dark:text-gold-400 p-2.5 rounded-full hover:bg-purple-200 transition-colors shadow-sm"
+              className="bg-emerald-50 dark:bg-gray-700 text-emerald-600 dark:text-gold-400 p-2.5 rounded-full hover:bg-emerald-100 transition-colors shadow-sm border border-emerald-100 dark:border-gray-600"
               title="Bagikan ke Sosial Media"
             >
               {isGeneratingPoster ? (
-                <span className="flex h-5 w-5 relative"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span><span className="relative inline-flex rounded-full h-5 w-5 bg-purple-500"></span></span>
+                <span className="flex h-5 w-5 relative"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-5 w-5 bg-emerald-500"></span></span>
               ) : (
                 <BiImageAdd size={24} />
               )}
@@ -139,25 +140,25 @@ export default function DoaPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-purple-50 dark:bg-gray-700/50 p-4 rounded-2xl text-sm text-gray-700 dark:text-gray-300 leading-relaxed border-l-4 border-purple-400">
+            <div className="bg-emerald-50/80 dark:bg-gray-700/50 p-5 rounded-2xl text-sm text-gray-700 dark:text-gray-300 leading-relaxed border-l-4 border-emerald-500 shadow-inner">
                {data.nasihat}
             </div>
 
             <div className="text-center pt-2">
-              <span className="inline-block bg-gold-100 dark:bg-gray-700 text-gold-600 dark:text-gold-400 text-[10px] font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-widest">
+              <span className="inline-block bg-gold-100/50 dark:bg-gray-700 text-gold-600 dark:text-gold-400 text-[10px] font-bold px-4 py-1.5 rounded-full mb-6 uppercase tracking-widest border border-gold-200 dark:border-gray-600">
                 Rekomendasi Doa
               </span>
               <p className="font-arab text-3xl text-gray-800 dark:text-white leading-loose mb-3" dir="rtl">{data.arab}</p>
-              <p className="text-xs text-purple-600 dark:text-purple-400 italic mb-3">{data.latin}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">&quot;{data.arti}&quot;</p>
-              <p className="text-xs font-bold text-gray-400">— {data.sumber}</p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-4 tracking-wide">{data.latin}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-5 leading-relaxed">&quot;{data.arti}&quot;</p>
+              <p className="text-xs font-bold text-gray-400 bg-gray-50 dark:bg-gray-800/50 inline-block px-3 py-1 rounded-lg">— {data.sumber}</p>
             </div>
           </div>
         </div>
       )}
 
       {/* ======================================================== */}
-      {/* KANVAS POSTER TIKTOK / REELS (DIPERBAIKI ANTI NUMPUK)    */}
+      {/* KANVAS POSTER TIKTOK - DENGAN TEMA EMERALD & FULL TEXT */}
       {/* ======================================================== */}
       {data && (
         <div 
@@ -165,14 +166,14 @@ export default function DoaPage() {
           style={{ 
             display: 'none', 
             flexDirection: 'column',
-            justifyContent: 'space-between', // Otomatis merenggang atas-bawah
+            justifyContent: 'space-between', 
             alignItems: 'center',
             width: '1080px', 
             height: '1920px', 
-            backgroundColor: '#2e1065', 
+            backgroundColor: '#064e3b', // Warna Emerald Gelap 
             color: 'white', 
             fontFamily: 'sans-serif',
-            padding: '120px 100px', // Padding lebih proporsional
+            padding: '120px 100px', 
             boxSizing: 'border-box',
             position: 'relative'
           }}
@@ -183,15 +184,16 @@ export default function DoaPage() {
           </div>
           
           {/* KOTAK KONTEN TENGAH */}
-          <div style={{ width: '100%', zIndex: 10, border: '4px solid rgba(168, 85, 247, 0.4)', borderRadius: '60px', padding: '80px', backgroundColor: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(10px)' }}>
+          <div style={{ width: '100%', zIndex: 10, border: '4px solid rgba(16, 185, 129, 0.4)', borderRadius: '60px', padding: '80px', backgroundColor: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(10px)' }}>
             
-            {/* Nasihat Section */}
+            {/* Nasihat Section (PEMBATAS SUBSTRING DIHAPUS) */}
             <div style={{ marginBottom: '60px', borderBottom: '2px dashed rgba(255,255,255,0.2)', paddingBottom: '50px' }}>
               <h2 style={{ color: '#fbbf24', fontSize: '30px', letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '30px', display: 'flex', alignItems: 'center' }}>
                 <BsStars size={40} color="#fbbf24" style={{ marginRight: '15px' }} /> Nasihat Untukmu
               </h2>
-              <p style={{ fontSize: '32px', color: '#e2e8f0', lineHeight: '1.8', margin: 0, fontStyle: 'italic' }}>
-                &quot;{data.nasihat.length > 250 ? data.nasihat.substring(0, 250) + '...' : data.nasihat}&quot;
+              {/* Ini dia perbaikannya: Menampilkan teks penuh tanpa dipotong! */}
+              <p style={{ fontSize: '30px', color: '#ecfdf5', lineHeight: '1.8', margin: 0, fontStyle: 'italic' }}>
+                &quot;{data.nasihat}&quot;
               </p>
             </div>
 
@@ -205,24 +207,23 @@ export default function DoaPage() {
                 {data.arab}
               </p>
               
-              <p style={{ textAlign: 'center', fontSize: '34px', color: '#d8b4fe', marginBottom: '60px', lineHeight: '1.6' }}>
+              <p style={{ textAlign: 'center', fontSize: '34px', color: '#a7f3d0', marginBottom: '60px', lineHeight: '1.6' }}>
                 &quot;{data.arti}&quot;
               </p>
 
               <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '28px', color: '#a855f7', fontWeight: 'bold' }}>Sumber: {data.sumber}</span>
+                <span style={{ fontSize: '28px', color: '#34d399', fontWeight: 'bold' }}>Sumber: {data.sumber}</span>
               </div>
             </div>
           </div>
 
           {/* WATERMARK PROMOSI TIKTOK DI BAWAH */}
-          {/* Karena pakai flex space-between, dia otomatis ke dorong ke bawah dengan aman */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10, marginTop: '40px' }}>
             <p style={{ color: '#fbbf24', fontSize: '36px', fontWeight: 'bold', margin: '0 0 15px 0', letterSpacing: '2px', textAlign: 'center' }}>
               TEMUKAN DOA UNTUK MASALAHMU
             </p>
             <div style={{ backgroundColor: 'white', padding: '20px 50px', borderRadius: '50px', border: '4px solid #fbbf24', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
-              <span style={{ color: '#2e1065', fontSize: '34px', fontWeight: 'bold' }}>
+              <span style={{ color: '#064e3b', fontSize: '34px', fontWeight: 'bold' }}>
                 quran-app-two-eta.vercel.app
               </span>
             </div>

@@ -116,12 +116,12 @@ export default function Home() {
             <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Tasbih</span>
           </Link>
 
-          {/* Tombol 3: Arah Kiblat */}
-          <Link href="/kiblat" className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center gap-2 hover:shadow-md transition">
-  <div className="w-14 h-14 bg-rose-50 dark:bg-gray-700 text-rose-500 dark:text-rose-400 rounded-full flex items-center justify-center">
+          {/* Tombol 3: Kompas Kiblat */}
+<Link href="/kiblat" className="flex flex-col items-center group">
+  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-active:scale-95 bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50">
     <BiCompass size={28} />
   </div>
-  <span className="text-xs font-bold text-gray-700 dark:text-gray-200">Kiblat</span>
+  <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Kiblat</span>
 </Link>
 
           {/* Tombol 4: Khatam Planner (Sultan Feature) */}

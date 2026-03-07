@@ -1,15 +1,18 @@
 "use client";
 import { useState } from 'react';
 import { callGeminiAPI } from '@/lib/gemini';
-import { BiMessageRoundedDots, BiImageAdd, BiBookHeart } from 'react-icons/bi';
+import { BiMessageRoundedDots, BiImageAdd, BiBookHeart, BiCopy, BiCheck } from 'react-icons/bi';
 import { BsStars } from 'react-icons/bs';
 
 interface DoaResponse {
+  judul: string;
   nasihat: string;
   arab: string;
   latin: string;
   arti: string;
   sumber: string;
+  deskripsi: string;
+  hashtag: string;
 }
 
 export default function DoaPage() {
@@ -17,15 +20,30 @@ export default function DoaPage() {
   const [data, setData] = useState<DoaResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   const handleCurhat = async () => {
     if (!curhat.trim()) return;
     setLoading(true);
     try {
-      // PROMPT ENGINEERING SULTAN: Memaksa AI membuat nasihat super pendek!
+      // PROMPT ENGINEERING VIP: Meminta AI sekalian buatin Caption & Hashtag Sosmed!
       const prompt = `Saya sedang merasa: "${curhat}". Berikan saya nasihat Islami yang sangat menenangkan hati, beserta satu rekomendasi doa pendek (maksimal 20 kata) yang relevan dengan kondisi saya. 
-      SYARAT MUTLAK: Bagian "nasihat" HARUS SANGAT PENDEK, jadikan HANYA 2-3 kalimat saja! Jangan bertele-tele.
-      Balas HANYA dengan format JSON persis seperti ini tanpa tambahan teks/markdown apapun: {"nasihat": "nasihat singkat 2-3 kalimat", "arab": "Teks Arab Doa", "latin": "Teks Latin", "arti": "Terjemahan", "sumber": "Sumber doa (misal: Q.S. Al-Baqarah: 286 atau HR. Bukhari)"}`;
+      SYARAT MUTLAK: 
+      1. Bagian "nasihat" HARUS SANGAT PENDEK, jadikan HANYA 2-3 kalimat saja! 
+      2. Buatkan "judul" yang memancing perhatian (hook) untuk konten dakwah.
+      3. Buatkan "deskripsi" (caption) yang menyentuh hati untuk pendukung konten.
+      4. Berikan "hashtag" yang relevan untuk TikTok/Instagram (minimal 5).
+      Balas HANYA dengan format JSON persis seperti ini tanpa tambahan teks/markdown apapun: 
+      {
+        "judul": "Judul Menarik",
+        "nasihat": "nasihat singkat 2-3 kalimat", 
+        "arab": "Teks Arab Doa", 
+        "latin": "Teks Latin", 
+        "arti": "Terjemahan", 
+        "sumber": "Sumber doa (misal: Q.S. Al-Baqarah: 286)",
+        "deskripsi": "Isi caption yang menyentuh hati pembaca",
+        "hashtag": "#doa #islam #..."
+      }`;
       
       const response = await callGeminiAPI(prompt);
       
@@ -35,18 +53,31 @@ export default function DoaPage() {
       const parsedData = JSON.parse(cleanedResponse);
       
       setData(parsedData);
+      setIsCopied(false); // Reset status copy
     } catch (error) { 
       console.error("ERROR GEMINI TERDETEKSI:", error); 
       
       setData({
+        judul: "Saat Hati Terasa Sesak",
         nasihat: "Koneksi AI sedang sibuk. Tarik napas, tenangkan diri, dan bacalah doa ini agar hatimu lapang.",
         arab: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي",
         latin: "Rabbisyrah lii shadrii wa yassir lii amrii",
         arti: "Ya Tuhanku, lapangkanlah untukku dadaku, dan mudahkanlah untukku urusanku.",
-        sumber: "Q.S. Thaha : 25-26"
+        sumber: "Q.S. Thaha : 25-26",
+        deskripsi: "Semoga Allah selalu melapangkan dada kita dalam menghadapi setiap urusan. Jangan pernah menyerah, pertolongan-Nya sangat dekat. Kunci dari segalanya adalah tawakkal. 🤲✨",
+        hashtag: "#DoaHarian #KetenanganHati #Tawakkal #Islam #Religi #SelfReminder"
       });
     }
     setLoading(false);
+  };
+
+  const handleCopyCaption = () => {
+    if (data) {
+      const textToCopy = `${data.judul}\n\n${data.deskripsi}\n\n${data.hashtag}`;
+      navigator.clipboard.writeText(textToCopy);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2500); // Kembali ke ikon semula setelah 2.5 detik
+    }
   };
 
   const downloadTikTokPoster = async () => {
@@ -119,41 +150,74 @@ export default function DoaPage() {
       </div>
 
       {data && (
-        <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 relative overflow-hidden group animate-fade-in-up">
-          <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
-            <h3 className="flex items-center text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-              <BiBookHeart className="mr-2 text-gold-500" size={20} /> Jawaban Untukmu
-            </h3>
+        <div className="space-y-6 animate-fade-in-up">
+          {/* KARTU UTAMA DOA */}
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700 relative overflow-hidden group">
+            <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
+              <h3 className="flex items-center text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                <BiBookHeart className="mr-2 text-gold-500" size={20} /> Jawaban Untukmu
+              </h3>
+              
+              <button 
+                onClick={downloadTikTokPoster} 
+                disabled={isGeneratingPoster} 
+                className="bg-emerald-50 dark:bg-gray-700 text-emerald-600 dark:text-gold-400 p-2.5 rounded-full hover:bg-emerald-100 transition-colors shadow-sm border border-emerald-100 dark:border-gray-600"
+                title="Download Gambar Poster"
+              >
+                {isGeneratingPoster ? (
+                  <span className="flex h-5 w-5 relative"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-5 w-5 bg-emerald-500"></span></span>
+                ) : (
+                  <BiImageAdd size={24} />
+                )}
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-emerald-50/80 dark:bg-gray-700/50 p-5 rounded-2xl text-sm text-gray-700 dark:text-gray-300 leading-relaxed border-l-4 border-emerald-500 shadow-inner">
+                 {data.nasihat}
+              </div>
+
+              <div className="text-center pt-2">
+                <span className="inline-block bg-gold-100/50 dark:bg-gray-700 text-gold-600 dark:text-gold-400 text-[10px] font-bold px-4 py-1.5 rounded-full mb-6 uppercase tracking-widest border border-gold-200 dark:border-gray-600">
+                  Rekomendasi Doa
+                </span>
+                <p className="font-arab text-3xl text-gray-800 dark:text-white leading-loose mb-3" dir="rtl">{data.arab}</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-4 tracking-wide">{data.latin}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-5 leading-relaxed">&quot;{data.arti}&quot;</p>
+                <p className="text-xs font-bold text-gray-400 bg-gray-50 dark:bg-gray-800/50 inline-block px-3 py-1 rounded-lg">— {data.sumber}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* KARTU CAPTION SOSMED (BARU!) */}
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-md border border-gray-100 dark:border-gray-700">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-bold text-gray-800 dark:text-white flex items-center">
+                📝 Ide Caption Sosmed
+              </h3>
+              <button 
+                onClick={handleCopyCaption}
+                className={`text-xs font-bold px-4 py-2 rounded-xl transition-all flex items-center shadow-sm border ${
+                  isCopied 
+                    ? 'bg-emerald-500 text-white border-emerald-500' 
+                    : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border-gray-200 dark:border-gray-600'
+                }`}
+              >
+                {isCopied ? <><BiCheck size={16} className="mr-1.5" /> Tersalin!</> : <><BiCopy size={16} className="mr-1.5" /> Salin Caption</>}
+              </button>
+            </div>
             
-            <button 
-              onClick={downloadTikTokPoster} 
-              disabled={isGeneratingPoster} 
-              className="bg-emerald-50 dark:bg-gray-700 text-emerald-600 dark:text-gold-400 p-2.5 rounded-full hover:bg-emerald-100 transition-colors shadow-sm border border-emerald-100 dark:border-gray-600"
-              title="Bagikan ke Sosial Media"
-            >
-              {isGeneratingPoster ? (
-                <span className="flex h-5 w-5 relative"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-5 w-5 bg-emerald-500"></span></span>
-              ) : (
-                <BiImageAdd size={24} />
-              )}
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            <div className="bg-emerald-50/80 dark:bg-gray-700/50 p-5 rounded-2xl text-sm text-gray-700 dark:text-gray-300 leading-relaxed border-l-4 border-emerald-500 shadow-inner">
-               {data.nasihat}
-            </div>
-
-            <div className="text-center pt-2">
-              <span className="inline-block bg-gold-100/50 dark:bg-gray-700 text-gold-600 dark:text-gold-400 text-[10px] font-bold px-4 py-1.5 rounded-full mb-6 uppercase tracking-widest border border-gold-200 dark:border-gray-600">
-                Rekomendasi Doa
-              </span>
-              <p className="font-arab text-3xl text-gray-800 dark:text-white leading-loose mb-3" dir="rtl">{data.arab}</p>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-4 tracking-wide">{data.latin}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-5 leading-relaxed">&quot;{data.arti}&quot;</p>
-              <p className="text-xs font-bold text-gray-400 bg-gray-50 dark:bg-gray-800/50 inline-block px-3 py-1 rounded-lg">— {data.sumber}</p>
+            <div className="bg-gray-50 dark:bg-gray-900/50 p-5 rounded-2xl border border-gray-100 dark:border-gray-700">
+              <p className="font-black text-gray-800 dark:text-white text-base mb-3">{data.judul}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed mb-4">
+                {data.deskripsi}
+              </p>
+              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                {data.hashtag}
+              </p>
             </div>
           </div>
+
         </div>
       )}
 
@@ -167,7 +231,7 @@ export default function DoaPage() {
             justifyContent: 'space-between', 
             alignItems: 'center',
             width: '1080px', 
-            minHeight: '1920px', // Gunakan minHeight agar tidak error jika terpaksa melar
+            minHeight: '1920px',
             backgroundColor: '#0f172a', 
             color: 'white', 
             fontFamily: 'sans-serif',

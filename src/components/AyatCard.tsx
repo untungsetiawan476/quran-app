@@ -4,7 +4,7 @@ import { callGeminiAPI } from '@/lib/gemini';
 import { 
   BiPlayCircle, BiPauseCircle, BiBookmark, BiHeadphone, 
   BiImageAdd, BiBrain, BiFolderPlus, BiCheckCircle,
-  BiCopy, BiCheck, BiMicrophone, BiMapPin // Tambahan BiMapPin untuk Terakhir Dibaca
+  BiCopy, BiCheck, BiMicrophone, BiMapPin 
 } from 'react-icons/bi';
 import { BsStars } from 'react-icons/bs';
 
@@ -54,7 +54,6 @@ export default function AyatCard({
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // STATE BARU: Untuk Terakhir Dibaca
   const [isPinned, setIsPinned] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -78,7 +77,6 @@ export default function AyatCard({
     };
   }, [audioUrl]);
 
-  // FUNGSI BARU: Simpan Terakhir Dibaca
   const tandaiTerakhirDibaca = () => {
     const lastReadData = {
       surahId: nomorSurah,
@@ -142,6 +140,7 @@ export default function AyatCard({
   };
 
   const handleTafsirAI = async () => {
+    setTafsirData(null); // Reset tafsir lama
     setLoading(true);
     try {
       const prompt = `Berikan intisari atau hikmah dari Surah ${surahName} ayat ${nomorAyat}. Teks terjemahan: "${terjemahan}". 
@@ -255,14 +254,13 @@ export default function AyatCard({
         </div>
         
         <div className="flex flex-col items-end space-y-2 relative">
-          <div className="flex space-x-3 items-center">
+          <div className="flex space-x-2 items-center">
             {showPosterBtn && (
               <button onClick={downloadPoster} disabled={isGeneratingPoster} className={`transition p-2 rounded-full text-gray-400 hover:text-islamic-500 hover:bg-islamic-50 dark:hover:bg-gray-700`} title="Jadikan Poster">
                 {isGeneratingPoster ? <span className="flex h-5 w-5 relative"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-islamic-400 opacity-75"></span><span className="relative inline-flex rounded-full h-5 w-5 bg-islamic-500"></span></span> : <BiImageAdd size={24} />}
               </button>
             )}
             
-            {/* TOMBOL PIN TERAKHIR DIBACA */}
             <button onClick={tandaiTerakhirDibaca} className={`transition p-2 rounded-full ${isPinned ? 'text-emerald-500 bg-emerald-50 dark:bg-gray-700' : 'text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-gray-700'}`} title="Tandai Terakhir Dibaca">
               {isPinned ? <BiCheckCircle size={24} /> : <BiMapPin size={24} />}
             </button>
@@ -279,10 +277,32 @@ export default function AyatCard({
               {isPlaying ? <BiPauseCircle size={32} /> : <BiPlayCircle size={32} />}
             </button>
 
-            <button onClick={handleTafsirAI} disabled={loading} className="text-gold-500 hover:text-gold-400 transition relative p-2">
-              <BsStars size={26} />
-              {loading && <span className="absolute top-1 right-1 flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-gold-500"></span></span>}
+            {/* ============================================================ */}
+            {/* TOMBOL AI SUPER PREMIUM (SUDAH KOTAK MELEBAR DENGAN TEKS)    */}
+            {/* ============================================================ */}
+            <button 
+              onClick={handleTafsirAI} 
+              disabled={loading} 
+              className={`transition-all duration-300 relative px-4 py-2.5 rounded-2xl flex items-center shadow-sm border
+                ${loading 
+                  ? 'bg-slate-100 text-slate-400 border-slate-200' 
+                  : 'bg-gold-50 hover:bg-gold-100 dark:bg-gold-950/30 text-gold-600 dark:text-gold-400 border-gold-200 dark:border-gold-800 hover:shadow-md'
+                }`}
+              title="Bedah Ayat pakai AI"
+            >
+              {loading ? (
+                <span className="flex h-5 w-5 mr-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-5 w-5 bg-gold-500"></span>
+                </span>
+              ) : (
+                <BsStars size={20} className="mr-2 animate-pulse" />
+              )}
+              <span className="font-bold text-xs">
+                {loading ? 'Meracik...' : 'Bedah AI'}
+              </span>
             </button>
+            {/* ============================================================ */}
           </div>
 
           {showPlaylistMenu && (
@@ -385,14 +405,16 @@ export default function AyatCard({
         />
       )}
 
+      {/* TAMPILAN TAFSIR & CAPTION SOSMED */}
       {tafsirData && (
-        <div className="mt-6 space-y-4 animate-fade-in-up">
-          <div className="p-6 bg-linear-to-br from-islamic-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-3xl border border-islamic-100 dark:border-gray-600 shadow-inner">
-            <h4 className="flex items-center text-xs font-black text-islamic-700 dark:text-gold-400 mb-4 uppercase tracking-[0.2em]"><BsStars className="mr-2" size={18} /> Hikmah Singkat AI</h4>
-            <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{tafsirData.nasihat}</div>
+        <div className="mt-6 space-y-4 animate-fade-in-up overflow-hidden">
+          <div className="p-6 bg-linear-to-br from-islamic-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-3xl border border-islamic-100 dark:border-gray-600 shadow-inner relative">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-gold-300/10 rounded-full blur-3xl"></div>
+            <h4 className="flex items-center text-xs font-black text-islamic-700 dark:text-gold-400 mb-4 uppercase tracking-[0.2em] relative"><BsStars className="mr-2 animate-pulse" size={18} /> Hikmah Singkat AI</h4>
+            <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed relative">{tafsirData.nasihat}</div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-bold text-gray-800 dark:text-white flex items-center">
                 📝 Ide Caption Sosmed
@@ -409,15 +431,16 @@ export default function AyatCard({
               </button>
             </div>
             
-            <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+            <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 relative z-10">
               <p className="font-black text-gray-800 dark:text-white text-base mb-3">{tafsirData.judul}</p>
               <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed mb-4">
                 {tafsirData.deskripsi}
               </p>
-              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 inline-block px-3 py-1 rounded-lg border border-emerald-100 dark:border-emerald-800/50">
                 {tafsirData.hashtag}
               </p>
             </div>
+             <div className="absolute bottom-0 left-0 w-20 h-20 bg-emerald-300/10 rounded-full blur-2xl"></div>
           </div>
         </div>
       )}

@@ -3,7 +3,8 @@ import { useState, useRef, useEffect } from 'react';
 import { callGeminiAPI } from '@/lib/gemini';
 import { 
   BiPlayCircle, BiPauseCircle, BiBookmark, BiHeadphone, 
-  BiImageAdd, BiBrain, BiFolderPlus, BiCheckCircle 
+  BiImageAdd, BiBrain, BiFolderPlus, BiCheckCircle,
+  BiCopy, BiCheck // Tambahan Ikon
 } from 'react-icons/bi';
 import { BsStars } from 'react-icons/bs';
 
@@ -20,13 +21,24 @@ interface AyatProps {
   showPosterBtn: boolean;
 }
 
+// Struktur data baru untuk merespon format konten
+interface TafsirResponse {
+  judul: string;
+  nasihat: string;
+  deskripsi: string;
+  hashtag: string;
+}
+
 export default function AyatCard({ 
   nomorSurah, surahName, nomorAyat, teksArab, teksLatin, terjemahan, audioUrl,
   fontSize, fontFamily, showPosterBtn 
 }: AyatProps) {
-  const [tafsir, setTafsir] = useState<string | null>(null);
+  
+  // State sekarang menampung Object, bukan sekadar String
+  const [tafsirData, setTafsirData] = useState<TafsirResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
+  const [isCopied, setIsCopied] = useState(false); // State Copy
   
   const [isPlaying, setIsPlaying] = useState(false);
   const [showFocusMenu, setShowFocusMenu] = useState(false);
@@ -115,19 +127,44 @@ export default function AyatCard({
   const handleTafsirAI = async () => {
     setLoading(true);
     try {
-      // PROMPT ENGINEERING SULTAN: Kita paksa AI merangkum maksimal 3 kalimat saja!
       const prompt = `Berikan intisari atau hikmah dari Surah ${surahName} ayat ${nomorAyat}. Teks terjemahan: "${terjemahan}". 
       SYARAT MUTLAK: 
-      1. Jadikan HANYA 1 paragraf pendek (maksimal 2-3 kalimat saja). 
-      2. Jangan bertele-tele, langsung ke intinya. 
-      3. Gunakan bahasa yang menyentuh hati dan mudah dipahami untuk caption Instagram/TikTok.`;
+      1. Bagian "nasihat" HARUS SANGAT PENDEK, jadikan HANYA 1 paragraf (maksimal 2-3 kalimat saja) langsung ke intinya. 
+      2. Buatkan "judul" yang memancing perhatian (hook) untuk konten dakwah.
+      3. Buatkan "deskripsi" (caption) yang menyentuh hati untuk pendukung konten.
+      4. Berikan "hashtag" yang relevan untuk TikTok/Instagram (minimal 5).
+      Balas HANYA dengan format JSON persis seperti ini tanpa tambahan teks/markdown apapun: 
+      {
+        "judul": "Judul Menarik",
+        "nasihat": "nasihat singkat 2-3 kalimat",
+        "deskripsi": "Isi caption yang menyentuh hati pembaca",
+        "hashtag": "#quran #islam #..."
+      }`;
       
       const response = await callGeminiAPI(prompt);
-      setTafsir(response.replace(/\*\*/g, ''));
+      const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, '').trim();
+      const parsedData = JSON.parse(cleanedResponse);
+      
+      setTafsirData(parsedData);
+      setIsCopied(false);
     } catch {
-      setTafsir("Maaf, gagal memuat tafsir AI saat ini.");
+      setTafsirData({
+        judul: `Hikmah Surah ${surahName}`,
+        nasihat: "Maaf, koneksi AI sedang sibuk. Silakan coba kembali sesaat lagi.",
+        deskripsi: `Mari kita renungkan bersama makna dari Surah ${surahName} ayat ${nomorAyat}. Semoga membawa keberkahan bagi kita semua. ✨`,
+        hashtag: `#QuranDaily #${surahName.replace(/[^a-zA-Z0-9]/g, '')} #HikmahQuran`
+      });
     }
     setLoading(false);
+  };
+
+  const handleCopyCaption = () => {
+    if (tafsirData) {
+      const textToCopy = `${tafsirData.judul}\n\n${tafsirData.deskripsi}\n\n${tafsirData.hashtag}`;
+      navigator.clipboard.writeText(textToCopy);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2500); 
+    }
   };
 
   const handleSaveToPlaylist = (folderName: string) => {
@@ -187,12 +224,10 @@ export default function AyatCard({
     setIsGeneratingPoster(false);
   };
 
-  // Logika font cerdas untuk ayat bahasa Arab
   const isSangatPanjang = teksArab.length > 250;
   const isPanjang = teksArab.length > 120;
   const arabFontSize = isSangatPanjang ? '42px' : isPanjang ? '55px' : '70px';
   const arabLineHeight = isSangatPanjang ? '1.7' : isPanjang ? '1.9' : '2.2';
-  
   const terjemahanFontSize = terjemahan.length > 200 ? '24px' : '30px';
 
   return (
@@ -314,10 +349,43 @@ export default function AyatCard({
       <p className="text-sm text-islamic-600 dark:text-gold-400 font-medium italic mb-3 tracking-wide">{teksLatin}</p>
       <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed">{terjemahan}</p>
 
-      {tafsir && (
-        <div className="mt-6 p-6 bg-linear-to-br from-islamic-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-3xl border border-islamic-100 dark:border-gray-600 shadow-inner">
-          <h4 className="flex items-center text-xs font-black text-islamic-700 dark:text-gold-400 mb-4 uppercase tracking-[0.2em]"><BsStars className="mr-2" size={18} /> Hikmah Singkat AI</h4>
-          <div className="text-sm text-gray-700 dark:text-gray-300 space-y-3 whitespace-pre-wrap leading-loose">{tafsir}</div>
+      {/* TAMPILAN TAFSIR & CAPTION SOSMED */}
+      {tafsirData && (
+        <div className="mt-6 space-y-4 animate-fade-in-up">
+          {/* Kotak Nasihat/Tafsir */}
+          <div className="p-6 bg-linear-to-br from-islamic-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-3xl border border-islamic-100 dark:border-gray-600 shadow-inner">
+            <h4 className="flex items-center text-xs font-black text-islamic-700 dark:text-gold-400 mb-4 uppercase tracking-[0.2em]"><BsStars className="mr-2" size={18} /> Hikmah Singkat AI</h4>
+            <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{tafsirData.nasihat}</div>
+          </div>
+
+          {/* Kotak Caption Copy-Paste */}
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-bold text-gray-800 dark:text-white flex items-center">
+                📝 Ide Caption Sosmed
+              </h3>
+              <button 
+                onClick={handleCopyCaption}
+                className={`text-xs font-bold px-4 py-2 rounded-xl transition-all flex items-center shadow-sm border ${
+                  isCopied 
+                    ? 'bg-emerald-500 text-white border-emerald-500' 
+                    : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border-gray-200 dark:border-gray-600'
+                }`}
+              >
+                {isCopied ? <><BiCheck size={16} className="mr-1.5" /> Tersalin!</> : <><BiCopy size={16} className="mr-1.5" /> Salin Caption</>}
+              </button>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+              <p className="font-black text-gray-800 dark:text-white text-base mb-3">{tafsirData.judul}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed mb-4">
+                {tafsirData.deskripsi}
+              </p>
+              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                {tafsirData.hashtag}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -363,14 +431,14 @@ export default function AyatCard({
             <span style={{ fontSize: '26px', color: '#94a3b8', fontWeight: 'bold' }}>— Q.S. {surahName} : {nomorAyat} —</span>
           </div>
           
-          {/* Box Hikmah Singkat: Langsung cetak penuh, AI sudah dibrifing bikin ringkas! */}
-          {tafsir && (
+          {/* Box Hikmah Singkat */}
+          {tafsirData && (
             <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '40px', borderRadius: '30px', borderLeft: '10px solid #fbbf24', margin: 0 }}>
               <h3 style={{ color: '#fbbf24', fontSize: '28px', marginBottom: '20px', marginTop: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
                 <BsStars size={32} style={{ marginRight: '15px' }} /> Hikmah Singkat
               </h3>
               <p style={{ fontSize: '26px', color: '#e2e8f0', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap' }}>
-                {tafsir}
+                {tafsirData.nasihat}
               </p>
             </div>
           )}

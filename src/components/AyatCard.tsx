@@ -115,9 +115,9 @@ export default function AyatCard({
   const handleTafsirAI = async () => {
     setLoading(true);
     try {
-      const prompt = `Berikan tafsir, penjelasan singkat, dan hikmah yang lembut dalam 3 paragraf untuk Surah ${surahName} ayat ${nomorAyat}. Teks terjemahan: "${terjemahan}". Gunakan bahasa Indonesia yang santun dan menenangkan.`;
+      const prompt = `Berikan tafsir, penjelasan singkat, dan hikmah yang lembut dalam 2-3 paragraf untuk Surah ${surahName} ayat ${nomorAyat}. Teks terjemahan: "${terjemahan}". Gunakan bahasa Indonesia yang santun dan menenangkan.`;
       const response = await callGeminiAPI(prompt);
-      setTafsir(response);
+      setTafsir(response.replace(/\*\*/g, '')); // Hapus markdown tebal
     } catch {
       setTafsir("Maaf, gagal memuat tafsir AI saat ini.");
     }
@@ -136,13 +136,13 @@ export default function AyatCard({
     
     if (!exists) {
       allPlaylists[folderName].push({
-        id: `${nomorSurah}-${nomorAyat}`, // PERBAIKAN 1: Tambah ID
+        id: `${nomorSurah}-${nomorAyat}`,
         surah: nomorSurah,
         surahName: surahName,
         ayat: nomorAyat,
         teksArab: teksArab,
         terjemahan: terjemahan,
-        audioUrl: audioUrl // PERBAIKAN 2: Masukkan audio agar bisa diputar di playlist!
+        audioUrl: audioUrl
       });
       localStorage.setItem('quran_playlists', JSON.stringify(allPlaylists));
     }
@@ -162,8 +162,12 @@ export default function AyatCard({
       const html2canvas = (await import('html2canvas')).default;
       const element = document.getElementById(`poster-${nomorAyat}`);
       if (element) {
-        element.style.display = 'block';
-        const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#0f172a' });
+        element.style.display = 'flex'; // Pakai flex agar layout bekerja
+        const canvas = await html2canvas(element, { 
+          scale: 2, 
+          useCORS: true, 
+          backgroundColor: '#0f172a' // Tema Dark Navy
+        });
         element.style.display = 'none';
         const image = canvas.toDataURL("image/jpeg", 0.9);
         const link = document.createElement('a');
@@ -177,14 +181,13 @@ export default function AyatCard({
     setIsGeneratingPoster(false);
   };
 
+  // Logika font cerdas untuk ayat bahasa Arab
   const isSangatPanjang = teksArab.length > 250;
   const isPanjang = teksArab.length > 120;
-  const arabFontSize = isSangatPanjang ? '42px' : isPanjang ? '55px' : '80px';
+  const arabFontSize = isSangatPanjang ? '42px' : isPanjang ? '55px' : '70px';
   const arabLineHeight = isSangatPanjang ? '1.7' : isPanjang ? '1.9' : '2.2';
   
-  const terjemahanFontSize = terjemahan.length > 200 ? '24px' : '32px';
-  const terjemahanAman = terjemahan.length > 350 ? terjemahan.substring(0, 350) + '...' : terjemahan;
-  const tafsirAman = tafsir ? (tafsir.length > 200 ? tafsir.substring(0, 200) + '...' : tafsir) : '';
+  const terjemahanFontSize = terjemahan.length > 200 ? '24px' : '30px';
 
   return (
     <div id={`ayat-${nomorAyat}`} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-6 border border-gray-100 dark:border-gray-700 scroll-mt-24 transition-all duration-500 relative">
@@ -248,7 +251,6 @@ export default function AyatCard({
                         placeholder="Folder Baru..." 
                         className="w-full text-xs px-3 py-2 border dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 dark:text-white outline-none focus:border-emerald-500"
                       />
-                      {/* PERBAIKAN 3: Tombol Simpan diganti jadi bg-emerald-600 agar cerah dan kelihatan! */}
                       <button onClick={() => newPlaylistName.trim() && handleSaveToPlaylist(newPlaylistName.trim())} disabled={!newPlaylistName.trim()} className="bg-emerald-600 text-white p-2 rounded-xl disabled:opacity-50 hover:bg-emerald-700 shadow-sm shrink-0">
                         <BiFolderPlus size={20} />
                       </button>
@@ -313,43 +315,77 @@ export default function AyatCard({
         </div>
       )}
 
-      {/* KANVAS SMART POSTER */}
-      <div id={`poster-${nomorAyat}`} style={{ display: 'none', width: '1080px', padding: '60px', backgroundColor: '#0f172a', color: 'white', fontFamily: 'sans-serif' }}>
-        <div style={{ border: '4px solid #fbbf24', borderRadius: '50px', padding: '60px', position: 'relative', backgroundColor: 'rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column', gap: '40px' }}>
+      {/* ========================================================== */}
+      {/* KANVAS POSTER TIKTOK - DESAIN SAMA DENGAN STUDIO & DOA   */}
+      {/* ========================================================== */}
+      <div 
+        id={`poster-${nomorAyat}`} 
+        style={{ 
+          display: 'none', 
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '1080px', 
+          minHeight: '1920px', 
+          backgroundColor: '#0f172a', // Dark Navy
+          color: 'white', 
+          fontFamily: 'sans-serif',
+          padding: '120px 100px',
+          boxSizing: 'border-box',
+          position: 'relative'
+        }}
+      >
+        {/* KOTAK KONTEN TENGAH */}
+        <div style={{ width: '100%', zIndex: 10, border: '4px solid #fbbf24', borderRadius: '60px', padding: '80px', backgroundColor: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', gap: '30px', position: 'relative' }}>
           
+          {/* Bintang Atas untuk menutupi border */}
           <div style={{ position: 'absolute', top: '-40px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#0f172a', padding: '0 30px' }}>
             <BsStars size={80} color="#fbbf24" />
           </div>
           
           <h2 style={{ textAlign: 'center', color: '#fbbf24', fontSize: '32px', letterSpacing: '8px', textTransform: 'uppercase', fontWeight: 'bold', margin: '20px 0 0 0' }}>
-            Ayat Hari Ini
+            PESAN HARI INI
           </h2>
           
-          <p style={{ textAlign: 'center', fontSize: arabFontSize, lineHeight: arabLineHeight, margin: 0, fontFamily: 'serif', direction: 'rtl' }}>
+          <p style={{ textAlign: 'center', fontSize: arabFontSize, lineHeight: arabLineHeight, margin: '40px 0', fontFamily: 'serif', direction: 'rtl', textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
             {teksArab}
           </p>
           
-          <p style={{ textAlign: 'center', fontSize: terjemahanFontSize, color: '#cbd5e1', fontStyle: 'italic', margin: 0, lineHeight: '1.6' }}>
-            &quot;{terjemahanAman}&quot;
+          <p style={{ textAlign: 'center', fontSize: terjemahanFontSize, color: '#e2e8f0', fontStyle: 'italic', margin: '0 0 40px 0', lineHeight: '1.6' }}>
+            &quot;{terjemahan}&quot;
           </p>
+
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <span style={{ fontSize: '26px', color: '#94a3b8', fontWeight: 'bold' }}>— Q.S. {surahName} : {nomorAyat} —</span>
+          </div>
           
-          {tafsirAman && (
+          {/* Box Hikmah Singkat */}
+          {tafsir && (
             <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '40px', borderRadius: '30px', borderLeft: '10px solid #fbbf24', margin: 0 }}>
-              <h3 style={{ color: '#fbbf24', fontSize: '28px', marginBottom: '15px', marginTop: 0, fontWeight: 'bold' }}>
-                ✨ Hikmah Singkat:
+              <h3 style={{ color: '#fbbf24', fontSize: '28px', marginBottom: '20px', marginTop: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                <BsStars size={32} style={{ marginRight: '15px' }} /> Hikmah Singkat
               </h3>
-              <p style={{ fontSize: '24px', color: '#e2e8f0', lineHeight: '1.6', margin: 0 }}>
-                {tafsirAman}
+              <p style={{ fontSize: '26px', color: '#e2e8f0', lineHeight: '1.6', margin: 0 }}>
+                {tafsir}
               </p>
             </div>
           )}
+        </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '2px solid #334155', paddingTop: '40px', marginTop: '10px' }}>
-            <span style={{ fontSize: '28px', color: '#fbbf24', fontWeight: 'bold' }}>Q.S. {surahName} : {nomorAyat}</span>
-            <span style={{ fontSize: '22px', color: '#64748b' }}>quran-app-two-eta.vercel.app</span>
+        {/* WATERMARK PROMOSI TIKTOK DI BAWAH */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10, marginTop: '60px' }}>
+          <p style={{ color: '#fbbf24', fontSize: '28px', fontWeight: 'bold', margin: '0 0 15px 0', letterSpacing: '2px', textTransform: 'uppercase' }}>
+            BACA TAFSIR LENGKAPNYA DI
+          </p>
+          <div style={{ backgroundColor: 'transparent', padding: '15px 50px', borderRadius: '50px', border: '3px solid #fbbf24' }}>
+            <span style={{ color: '#fbbf24', fontSize: '28px', fontWeight: 'bold' }}>
+              quran-app-two-eta.vercel.app
+            </span>
           </div>
         </div>
+
       </div>
+
     </div>
   );
 }

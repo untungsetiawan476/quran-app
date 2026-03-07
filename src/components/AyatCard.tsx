@@ -4,9 +4,12 @@ import { callGeminiAPI } from '@/lib/gemini';
 import { 
   BiPlayCircle, BiPauseCircle, BiBookmark, BiHeadphone, 
   BiImageAdd, BiBrain, BiFolderPlus, BiCheckCircle,
-  BiCopy, BiCheck // Tambahan Ikon
+  BiCopy, BiCheck, BiMicrophone // Ditambah BiMicrophone
 } from 'react-icons/bi';
 import { BsStars } from 'react-icons/bs';
+
+// Memanggil Komponen Ujian Suara yang baru kita buat
+import VoiceHafalan from './VoiceHafalan';
 
 interface AyatProps {
   nomorSurah: number;
@@ -21,7 +24,6 @@ interface AyatProps {
   showPosterBtn: boolean;
 }
 
-// Struktur data baru untuk merespon format konten
 interface TafsirResponse {
   judul: string;
   nasihat: string;
@@ -34,11 +36,10 @@ export default function AyatCard({
   fontSize, fontFamily, showPosterBtn 
 }: AyatProps) {
   
-  // State sekarang menampung Object, bukan sekadar String
   const [tafsirData, setTafsirData] = useState<TafsirResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
-  const [isCopied, setIsCopied] = useState(false); // State Copy
+  const [isCopied, setIsCopied] = useState(false); 
   
   const [isPlaying, setIsPlaying] = useState(false);
   const [showFocusMenu, setShowFocusMenu] = useState(false);
@@ -46,6 +47,9 @@ export default function AyatCard({
   const [ambientMode, setAmbientMode] = useState('none');
   const [isQuizMode, setIsQuizMode] = useState(false);
   const [hiddenWords, setHiddenWords] = useState<number[]>([]);
+  
+  // STATE BARU: Untuk menampilkan Kuis Suara
+  const [showVoiceQuiz, setShowVoiceQuiz] = useState(false);
 
   const [showPlaylistMenu, setShowPlaylistMenu] = useState(false);
   const [playlists, setPlaylists] = useState<string[]>([]);
@@ -325,7 +329,15 @@ export default function AyatCard({
                 </div>
               </div>
               <button onClick={toggleQuizMode} className={`flex items-center justify-center py-3 rounded-xl font-bold transition-all shadow-sm ${isQuizMode ? 'bg-gold-500 text-white' : 'bg-white dark:bg-gray-800 text-islamic-700 dark:text-gold-400 hover:bg-islamic-50'}`}>
-                <BiBrain className="mr-2" size={20} /> {isQuizMode ? 'Selesai Uji Hafalan' : 'Mulai Uji Hafalan'}
+                <BiBrain className="mr-2" size={20} /> {isQuizMode ? 'Selesai Uji Hafalan Teks' : 'Mulai Uji Hafalan Teks'}
+              </button>
+              
+              {/* TOMBOL BARU: UJI HAFALAN SUARA */}
+              <button 
+                onClick={() => setShowVoiceQuiz(true)} 
+                className="flex items-center justify-center py-3 rounded-xl font-bold transition-all shadow-sm bg-slate-800 text-emerald-400 hover:bg-slate-700 w-full"
+              >
+                <BiMicrophone className="mr-2" size={20} /> Cek Pakai Suara (BETA)
               </button>
             </div>
           )}
@@ -349,16 +361,22 @@ export default function AyatCard({
       <p className="text-sm text-islamic-600 dark:text-gold-400 font-medium italic mb-3 tracking-wide">{teksLatin}</p>
       <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed">{terjemahan}</p>
 
+      {/* RENDER KOMPONEN KUIS SUARA JIKA AKTIF */}
+      {showVoiceQuiz && (
+        <VoiceHafalan 
+          teksArabAsli={teksArab} 
+          onClose={() => setShowVoiceQuiz(false)} 
+        />
+      )}
+
       {/* TAMPILAN TAFSIR & CAPTION SOSMED */}
       {tafsirData && (
         <div className="mt-6 space-y-4 animate-fade-in-up">
-          {/* Kotak Nasihat/Tafsir */}
           <div className="p-6 bg-linear-to-br from-islamic-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-3xl border border-islamic-100 dark:border-gray-600 shadow-inner">
             <h4 className="flex items-center text-xs font-black text-islamic-700 dark:text-gold-400 mb-4 uppercase tracking-[0.2em]"><BsStars className="mr-2" size={18} /> Hikmah Singkat AI</h4>
             <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{tafsirData.nasihat}</div>
           </div>
 
-          {/* Kotak Caption Copy-Paste */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-bold text-gray-800 dark:text-white flex items-center">
@@ -390,7 +408,7 @@ export default function AyatCard({
       )}
 
       {/* ========================================================== */}
-      {/* KANVAS POSTER TIKTOK - DESAIN SAMA DENGAN STUDIO         */}
+      {/* KANVAS POSTER TIKTOK - DESAIN SAMA DENGAN STUDIO           */}
       {/* ========================================================== */}
       <div 
         id={`poster-${nomorAyat}`} 
